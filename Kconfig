@@ -1,0 +1,9 @@
+menu "Siren Synth"
+
+    config SIREN_SYNTH_ENABLED
+        bool "Enable Siren Synth"
+        default y
+        help
+            Enable the siren synthesis component.
+
+endmenu

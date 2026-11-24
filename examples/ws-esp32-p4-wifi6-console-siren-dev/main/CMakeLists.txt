@@ -1,0 +1,15 @@
+idf_component_register(
+    SRCS
+        "main.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        esp-idf-siren-synth
+        esp_codec_dev
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_driver_i2s
+        console
+        esp_timer
+        nvs_flash
+)

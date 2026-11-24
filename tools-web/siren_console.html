@@ -1,0 +1,1945 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <title>Siren Synth · Browser Console</title>
+    <style>
+:root {
+  color-scheme: dark;
+  --page: #0a0d12;
+  --panel: #11151c;
+  --panel-raised: #181d26;
+  --panel-highlight: #1f2532;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.15);
+  --text: #f0f4f8;
+  --muted: #8b96a5;
+  --accent: #00e5a3;
+  --accent-glow: rgba(0, 229, 163, 0.25);
+  --cyan: #00f0ff;
+  --cyan-glow: rgba(0, 240, 255, 0.2);
+  --danger: #ff4d5a;
+  --danger-bg: rgba(255, 77, 90, 0.15);
+  --warning: #ffb830;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Inter, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(0, 229, 163, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 88% 8%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+    var(--page);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.topbar,
+main,
+footer {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 30px 0 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+h1 span {
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+h2 {
+  margin-bottom: 16px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: var(--muted);
+  background: var(--panel-raised);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 200ms ease;
+}
+
+.badge::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.badge-connected {
+  border-color: rgba(0, 229, 163, 0.4);
+  color: var(--accent);
+  background: rgba(0, 229, 163, 0.08);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.badge-connected::before {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse-dot 2s infinite;
+}
+
+.badge-error {
+  border-color: rgba(255, 77, 90, 0.4);
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.badge-error::before {
+  background: var(--danger);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+main {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 32px;
+}
+
+.panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+  background: var(--panel);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  transition: border-color 200ms ease;
+}
+
+.panel:hover {
+  border-color: var(--line-strong);
+}
+
+.section-heading,
+.connection-controls,
+.button-row,
+.command-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-heading {
+  align-items: center;
+}
+
+.section-heading h2 {
+  margin-bottom: 0;
+}
+
+.connection-controls {
+  margin-top: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.grow {
+  flex: 1;
+}
+
+input,
+select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+  background: var(--page);
+  font-size: 0.88rem;
+  transition: all 150ms ease;
+}
+
+input:hover:not(:disabled),
+select:hover:not(:disabled) {
+  border-color: var(--line-strong);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+input:disabled,
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 9px 18px;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 140ms ease;
+  user-select: none;
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.primary {
+  color: #061510;
+  background: var(--accent);
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
+
+.secondary {
+  border-color: var(--line);
+  background: var(--panel-raised);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--panel-highlight);
+  border-color: var(--line-strong);
+}
+
+.danger {
+  border-color: rgba(255, 77, 90, 0.4);
+  color: #fff;
+  background: var(--danger);
+  box-shadow: 0 2px 12px rgba(255, 77, 90, 0.25);
+}
+
+.hint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.stack {
+  display: grid;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.device-panel {
+  grid-column: 1 / -1;
+}
+
+.settings-panel {
+  grid-column: 1 / -1;
+}
+
+.presets-panel {
+  grid-column: 1 / -1;
+}
+
+.preset-controls {
+  margin-top: 16px;
+}
+
+.modal {
+  width: min(460px, calc(100% - 32px));
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 24px;
+  color: var(--text);
+  background: var(--panel);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+}
+
+.modal::backdrop {
+  background: rgba(6, 8, 12, 0.8);
+  backdrop-filter: blur(6px);
+}
+
+.modal h2 {
+  margin-bottom: 18px;
+}
+
+.modal .button-row {
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.settings-group {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--panel-raised);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.settings-group h3 {
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.settings-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-fields input,
+.settings-fields select {
+  min-height: 38px;
+  padding: 7px 10px;
+  font-size: 0.84rem;
+}
+
+.toggle-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.toggle-setting input {
+  width: 20px;
+  min-height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.config-output {
+  overflow: auto;
+  min-height: 100px;
+  max-height: 280px;
+  margin: 16px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  color: #c9d8e8;
+  background: #080a0e;
+  font: 0.82rem/1.6 ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.console-panel {
+  min-height: 320px;
+}
+
+.command-row {
+  margin-top: 18px;
+}
+
+code {
+  color: var(--accent);
+  background: rgba(0, 229, 163, 0.1);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+.event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  max-height: 360px;
+  margin: 16px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  list-style: none;
+  background: #080a0e;
+}
+
+.log-entry {
+  display: grid;
+  grid-template-columns: 85px 56px minmax(0, 1fr);
+  gap: 10px;
+  padding: 5px 8px;
+  color: #cad2db;
+  font: 0.78rem/1.45 ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  border-radius: 4px;
+}
+
+.log-entry:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.log-entry time {
+  color: #556274;
+}
+
+.log-level {
+  display: inline-block;
+  font-weight: 700;
+}
+
+.log-tx .log-level {
+  color: var(--cyan);
+}
+
+.log-rx .log-level,
+.log-info .log-level {
+  color: var(--accent);
+}
+
+.log-error .log-level {
+  color: var(--danger);
+}
+
+.log-message {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding: 20px 0 32px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 840px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar,
+  .section-heading,
+  .connection-controls,
+  .command-row,
+  footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .device-panel {
+    grid-column: auto;
+  }
+
+  .settings-panel {
+    grid-column: auto;
+  }
+
+  .presets-panel {
+    grid-column: auto;
+  }
+
+  .section-heading .button-row {
+    flex-wrap: wrap;
+  }
+
+  .button-row > .button,
+  .connection-controls > .button,
+  .command-row > .button {
+    flex: 1;
+  }
+
+  .log-entry {
+    grid-template-columns: 70px 48px minmax(0, 1fr);
+    gap: 6px;
+    font-size: 0.72rem;
+  }
+}
+</style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">WAVESHARE ESP32-P4 WIFI6 · STANDALONE BROWSER TOOL</p>
+        <h1>Siren Synth <span>Browser Console</span></h1>
+      </div>
+      <div class="topbar-actions">
+        <div id="connection-badge" class="badge" role="status">Disconnected</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel connection-panel" aria-labelledby="connection-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">USB SERIAL · WEB SERIAL</p>
+            <h2 id="connection-title">Device connection</h2>
+          </div>
+        </div>
+        <div class="connection-controls">
+          <p class="hint">Use Chrome, Edge, or the VS Code Chromium browser. Press Connect to choose a USB serial device in the browser; no server or Python bridge is used. Close ESP-IDF Monitor and other serial apps first because the UART can only be opened by one app at a time.</p>
+          <button id="connect-button" class="button primary" type="button">Choose device and connect</button>
+          <button id="disconnect-button" class="button secondary" type="button" disabled>Disconnect</button>
+        </div>
+        <p class="hint">Opening the serial port may reset the board. Firmware identity is verified before controls are enabled; playback never starts on connect.</p>
+        <p id="connection-message" class="hint" role="status">Ready. Connect to select the board and read its live state.</p>
+      </section>
+
+      <section class="dashboard" aria-label="Device controls">
+        <article class="panel">
+          <p class="eyebrow">PLAYBACK</p>
+          <h2>Signal control</h2>
+          <canvas id="siren-scope" width="480" height="80" style="width:100%; height:80px; border-radius:8px; background:#080a0e; border:1px solid var(--line); margin-bottom:14px;"></canvas>
+          <form id="playback-form" class="stack">
+            <label class="field">
+              <span>Firmware safety timeout (seconds)</span>
+              <input id="safety-timeout" type="number" min="0" max="3600" step="1" value="30" inputmode="numeric">
+            </label>
+            <div class="button-row">
+              <button id="start-button" class="button primary" type="submit" disabled>Start current pattern</button>
+              <button id="cancel-button" class="button secondary" type="button" disabled>Cancel · wind down</button>
+            </div>
+            <div class="button-row">
+              <button id="stop-button" class="button danger" type="button" disabled>Brake now</button>
+            </div>
+          </form>
+          <p class="hint">Cancel winds down over about 3× the saved Motor Fall time. Brake now stops quickly and can interrupt a wind-down. Use a safety timeout for continuous playback.</p>
+        </article>
+
+        <article class="panel">
+          <p class="eyebrow">OUTPUT</p>
+          <h2>Speaker volume</h2>
+          <form id="volume-form" class="stack">
+            <label class="field">
+              <span>Volume (0–100)</span>
+              <input id="volume" type="number" min="0" max="100" step="1" placeholder="Connect to read" inputmode="numeric">
+            </label>
+            <button id="volume-button" class="button secondary" type="submit" disabled>Apply volume</button>
+          </form>
+          <p class="hint">Accepted volume changes are saved by the firmware in NVS.</p>
+        </article>
+
+        <article class="panel device-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">READ-ONLY SNAPSHOT</p>
+              <h2>Device configuration</h2>
+            </div>
+            <div class="button-row">
+              <button id="read-status" class="button secondary" type="button" disabled>Read status</button>
+              <button id="read-config" class="button secondary" type="button" disabled>Read config</button>
+              <button id="run-benchmark" class="button secondary" type="button" disabled>Run DSP benchmark</button>
+            </div>
+          </div>
+          <p id="device-read-state" class="hint" role="status">Device values have not been read. Connect to show actual firmware settings; factory defaults are not shown as live values.</p>
+          <pre id="device-config" class="config-output" aria-live="polite">Connect to a verified device to read its configuration.</pre>
+        </article>
+
+        <article class="panel presets-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">LOCAL PRESETS</p>
+              <h2>Sound library</h2>
+            </div>
+            <div class="button-row preset-actions">
+              <button id="save-preset" class="button secondary" type="button" disabled>Save current as…</button>
+              <button id="export-presets" class="button secondary" type="button">Export</button>
+              <button id="import-presets" class="button secondary" type="button">Import</button>
+              <input id="preset-file" type="file" accept=".json,application/json" hidden>
+            </div>
+          </div>
+          <div class="connection-controls preset-controls">
+            <label class="field grow">
+              <span>Built-in and saved presets</span>
+              <select id="preset-select" aria-label="Sound preset"></select>
+            </label>
+            <button id="apply-preset" class="button primary" type="button" disabled>Apply preset</button>
+            <button id="delete-preset" class="button danger" type="button" disabled>Delete saved preset</button>
+          </div>
+          <p class="hint">Presets are stored in this browser profile. Import/export transfers user presets as JSON; applying a preset updates the complete configuration and commits NVS once without starting playback.</p>
+        </article>
+
+        <article class="panel settings-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">SYNTHESIS CONTROLS</p>
+              <h2>Sound configuration</h2>
+            </div>
+            <button id="refresh-config" class="button secondary" type="button" disabled>Reload from device</button>
+          </div>
+          <p class="hint">A setting is sent when you finish editing it and is saved to device NVS. A new pattern applies on the next playback. Distance Character is experimental: an uncalibrated creative filter/level effect, not a physical distance model, and not acoustically accepted.</p>
+          <div id="settings-grid" class="settings-grid">Loading configuration controls…</div>
+        </article>
+      </section>
+
+      <section class="panel console-panel" aria-labelledby="console-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">FIRMWARE CLI</p>
+            <h2 id="console-title">Command console</h2>
+          </div>
+          <button id="clear-log" class="button secondary" type="button">Clear view</button>
+        </div>
+        <form id="command-form" class="command-row">
+          <label class="field grow">
+            <span>One <code>siren</code> or <code>audio</code> command</span>
+            <input id="command-input" type="text" maxlength="128" autocomplete="off" spellcheck="false" placeholder="siren config" disabled>
+          </label>
+          <button id="send-command" class="button primary" type="submit" disabled>Send</button>
+        </form>
+        <p class="hint">Commands go directly to the verified firmware CLI, never to a PC shell. Reset commands require an additional confirmation.</p>
+        <ol id="event-log" class="event-log" aria-live="polite" aria-label="Serial event log"></ol>
+      </section>
+    </main>
+    <dialog id="save-preset-dialog" class="modal">
+      <form id="save-preset-form" method="dialog">
+        <p class="eyebrow">LOCAL PRESET</p>
+        <h2>Save current settings</h2>
+        <label class="field">
+          <span>Preset name</span>
+          <input id="preset-name" type="text" minlength="1" maxlength="48" autocomplete="off" required>
+        </label>
+        <p class="hint">Names can use letters, numbers, spaces, and _ ( ) . -.</p>
+        <div class="button-row">
+          <button id="cancel-save-preset" class="button secondary" type="button">Cancel</button>
+          <button class="button primary" type="submit">Save preset</button>
+        </div>
+      </form>
+    </dialog>
+    <footer>
+      <span>Single HTML file · no server or Python</span>
+      <span>Playback remains stopped unless you explicitly start it.</span>
+    </footer>
+  <script>
+"use strict";
+
+const FIRMWARE_ID = "TOOL_ID:esp-idf-siren-synth:console_siren_dev:3";
+const PRESET_STORAGE_KEY = "esp-idf-siren-synth.presets.v3";
+const LEGACY_PRESET_STORAGE_KEY = "esp-idf-siren-synth.presets.v2";
+const DEFAULTS = {
+  pattern: "warning", room: "off", source: "e57", chopper: "multi-chopper",
+  radio: "0", thermal: "1", jitter: "1", volume: "50", amplitude: "0.62",
+  sweep_start_hz: "210", sweep_end_hz: "420", rotor_hz: "9",
+  modulation_depth: "0.26", wobble_hz: "2.2", attack_ms: "50",
+  release_ms: "180", duration_ms: "3000", room_size: "0.5",
+  room_mix: "0.25", radio_mix: "0.5", distance_mix: "0", peak_rpm: "3450",
+  motor_rise_s: "1.55", motor_fall_s: "5.8", rotor_high_ports: "12",
+  rotor_low_ports: "10", vanes_high: "5", vanes_low: "4",
+  undertone_ports: "2", overtone_ports: "3", mix_rotor_high: "1",
+  mix_rotor_low: "0.95", mix_vanes_high: "0.45", mix_vanes_low: "0.4",
+  mix_undertone: "0.3", mix_overtone: "0.5",
+};
+const SELECTS = [
+  { key: "pattern", label: "Signal pattern", options: ["warning", "all-clear", "catastrophe", "test"] },
+  { key: "room", label: "Room profile", options: ["off", "outdoor", "bunker", "night"] },
+  { key: "source", label: "Sound source", options: ["e57", "chopper"] },
+  { key: "chopper", label: "Chopper configuration", options: ["single", "multi-tone", "multi-chopper"] },
+];
+const BOOLEANS = [
+  { key: "radio", label: "Radio filter" },
+  { key: "thermal", label: "Thermal motor loss" },
+  { key: "jitter", label: "Rotor jitter" },
+];
+const NUMBERS = [
+  ["amplitude", "Amplitude", 0.0001, 1, 0.01],
+  ["sweep_start_hz", "Sweep Start (Hz)", 20, 899, 1],
+  ["sweep_end_hz", "Sweep End (Hz)", 21, 900, 1],
+  ["rotor_hz", "Rotor (Hz)", 0.01, 30, 0.1],
+  ["modulation_depth", "Modulation Depth", 0, 1, 0.01],
+  ["wobble_hz", "Wobble (Hz)", 0.01, 30, 0.1],
+  ["attack_ms", "Attack (ms)", 1, 5000, 1],
+  ["release_ms", "Release (ms)", 1, 5000, 1],
+  ["duration_ms", "Signal duration (ms)", 100, 60000, 100],
+  ["room_size", "Room Size", 0, 1, 0.01],
+  ["room_mix", "Room Mix", 0, 1, 0.01],
+  ["radio_mix", "Radio Mix", 0, 1, 0.01],
+  ["distance_mix", "Distance Character Mix", 0, 1, 0.01],
+  ["peak_rpm", "Peak RPM", 100, 30000, 10],
+  ["motor_rise_s", "Motor Rise (s)", 0.05, 30, 0.05],
+  ["motor_fall_s", "Motor Fall (s)", 0.05, 60, 0.05],
+  ["rotor_high_ports", "High Rotor · Ports", 0, 64, 0.25],
+  ["rotor_low_ports", "Low Rotor · Ports", 0, 64, 0.25],
+  ["vanes_high", "High Vanes", 0, 64, 0.25],
+  ["vanes_low", "Low Vanes", 0, 64, 0.25],
+  ["undertone_ports", "Undertone · Ports", 0, 64, 0.25],
+  ["overtone_ports", "Overtone · Ports", 0, 64, 0.25],
+  ["mix_rotor_high", "High Rotor Mix", 0, 1, 0.01],
+  ["mix_rotor_low", "Low Rotor Mix", 0, 1, 0.01],
+  ["mix_vanes_high", "High Vanes Mix", 0, 1, 0.01],
+  ["mix_vanes_low", "Low Vanes Mix", 0, 1, 0.01],
+  ["mix_undertone", "Undertone Mix", 0, 1, 0.01],
+  ["mix_overtone", "Overtone Mix", 0, 1, 0.01],
+].map(([key, label, minimum, maximum, step]) => ({
+  key, label, minimum, maximum, step, default: DEFAULTS[key],
+}));
+const SELECT_COMMANDS = {
+  pattern: "siren preset", room: "siren room",
+  source: "siren model", chopper: "siren chopper",
+};
+const CONFIG_KEYS = {
+  pattern: "pattern", room: "room", room_size: "room_size", room_mix: "room_mix",
+  radio_mix: "radio_mix", distance_mix: "distance_mix",
+  thermal: "thermal", jitter: "jitter", radio: "radio",
+  volume: "volume", source: "source", chopper: "chopper", peak_rpm: "peak_rpm",
+  rise: "motor_rise_s", fall: "motor_fall_s", amplitude: "amplitude",
+  sweep_start_hz: "sweep_start_hz", sweep_end_hz: "sweep_end_hz",
+  rotor_hz: "rotor_hz", modulation_depth: "modulation_depth", wobble_hz: "wobble_hz",
+  attack_ms: "attack_ms", release_ms: "release_ms", duration_ms: "duration_ms",
+};
+const PORT_KEYS = {
+  rotor_high: "rotor_high_ports", rotor_low: "rotor_low_ports",
+  vane_high: "vanes_high", vane_low: "vanes_low",
+  undertone: "undertone_ports", overtone: "overtone_ports",
+};
+const MIX_KEYS = {
+  rotor_high: "mix_rotor_high", rotor_low: "mix_rotor_low",
+  vane_high: "mix_vanes_high", vane_low: "mix_vanes_low",
+  undertone: "mix_undertone", overtone: "mix_overtone",
+};
+const BUILTINS = Object.fromEntries(
+  ["Warning", "All Clear", "Catastrophe", "Test"].map((name, index) => [
+    name,
+    { ...DEFAULTS, pattern: ["warning", "all-clear", "catastrophe", "test"][index] },
+  ]),
+);
+const CHOPPER_ACTIVE = {
+  single: [0, 2],
+  "multi-tone": [0, 1, 2, 3],
+  "multi-chopper": [0, 1, 2, 3, 4, 5],
+};
+const PORT_COUNT_KEYS = [
+  "rotor_high_ports", "rotor_low_ports", "vanes_high", "vanes_low",
+  "undertone_ports", "overtone_ports",
+];
+const PORT_MIX_KEYS = [
+  "mix_rotor_high", "mix_rotor_low", "mix_vanes_high", "mix_vanes_low",
+  "mix_undertone", "mix_overtone",
+];
+const SETTING_GROUPS = [
+  { title: "Signal", keys: ["pattern", "amplitude", "sweep_start_hz", "sweep_end_hz", "rotor_hz", "modulation_depth", "wobble_hz", "attack_ms", "release_ms", "duration_ms"] },
+  { title: "Room and effects", keys: ["room", "room_size", "room_mix", "radio_mix", "distance_mix", "radio", "thermal", "jitter"] },
+  { title: "Chopper and RPM", keys: ["source", "chopper", "peak_rpm", "motor_rise_s", "motor_fall_s", "rotor_high_ports", "rotor_low_ports", "vanes_high", "vanes_low", "undertone_ports", "overtone_ports", "mix_rotor_high", "mix_rotor_low", "mix_vanes_high", "mix_vanes_low", "mix_undertone", "mix_overtone"] },
+];
+
+const connectButton = document.getElementById("connect-button");
+const disconnectButton = document.getElementById("disconnect-button");
+const connectionMessage = document.getElementById("connection-message");
+const commandInput = document.getElementById("command-input");
+const eventLog = document.getElementById("event-log");
+const configOutput = document.getElementById("device-config");
+const connectionBadge = document.getElementById("connection-badge");
+let connected = false;
+let busy = false;
+let pendingPlaybackStop = null;
+let currentSettings = { ...DEFAULTS };
+let presetCatalog = { schema_version: 3, presets: {} };
+let configLoaded = false;
+let playbackActive = false;
+let connectionStage = "Disconnected";
+let serialPort = null;
+let serialReader = null;
+let serialWriter = null;
+let pendingRead = null;
+let configTransactionActive = false;
+const deviceSnapshot = { status: "", config: "", audio: "" };
+const deviceReadState = document.getElementById("device-read-state");
+
+function appendLogRow(level, text) {
+  const row = document.createElement("li");
+  row.className = `log-entry log-${level.toLowerCase()}`;
+  const time = document.createElement("time");
+  time.dateTime = new Date().toISOString();
+  time.textContent = new Date().toLocaleTimeString();
+  const label = document.createElement("span");
+  label.className = "log-level";
+  label.textContent = level;
+  const message = document.createElement("span");
+  message.className = "log-message";
+  message.textContent = text;
+  row.append(time, label, message);
+  eventLog.append(row);
+  while (eventLog.children.length > 500) eventLog.firstElementChild.remove();
+  eventLog.scrollTop = eventLog.scrollHeight;
+}
+
+function showError(error) {
+  appendLogRow("ERROR", error instanceof Error ? error.message : String(error));
+}
+
+function cleanSerialText(text) {
+  return text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, "").replace(/\x00/g, "");
+}
+
+function promptReceived(text) {
+  return /(?:^|\n)siren>[ \t]+$/.test(cleanSerialText(text).replace(/\r/g, ""));
+}
+
+function commandWasRejected(text) {
+  return /(?:^|\n)(?:Unrecognized command|Unknown (?:preset|room profile|source model|chopper configuration|parameter)|Unknown parameter or value out of range|Invalid numeric value|Usage:|Command returned non-zero error code|Could not )/i.test(cleanSerialText(text));
+}
+
+function setBusy(value) {
+  busy = value;
+  for (const button of document.querySelectorAll("button")) {
+    if (!["clear-log", "export-presets", "import-presets"].includes(button.id)) {
+      button.disabled = value || (!connected && button.id !== "connect-button");
+    }
+  }
+  connectButton.disabled = value || connected;
+  disconnectButton.disabled = value || !connected;
+  commandInput.disabled = value || !connected;
+  for (const control of document.querySelectorAll("[data-setting-key]")) {
+    control.disabled = value || !connected;
+  }
+  renderState();
+}
+
+function renderState() {
+  connectionBadge.textContent = connectionStage;
+  const failed = connectionStage === "Connection failed" ||
+    connectionStage === "Web Serial unavailable";
+  connectionBadge.className = `badge ${connected ? "badge-connected" : failed ? "badge-error" : ""}`;
+  document.getElementById("start-button").disabled = !connected || busy;
+  document.getElementById("cancel-button").disabled = !connected || !playbackActive;
+  document.getElementById("stop-button").disabled = !connected || !playbackActive;
+  document.getElementById("volume-button").disabled = !connected || busy;
+  document.getElementById("read-status").disabled = !connected || busy;
+  document.getElementById("read-config").disabled = !connected || busy;
+  document.getElementById("refresh-config").disabled = !connected || busy;
+  document.getElementById("run-benchmark").disabled = !connected || busy;
+  document.getElementById("save-preset").disabled = !connected || busy || !configLoaded;
+  document.getElementById("apply-preset").disabled = !connected || busy;
+  document.getElementById("send-command").disabled = !connected || busy;
+  updatePresetButtons();
+}
+
+async function readChunk(timeoutMs) {
+  if (!serialReader) throw new Error("The serial reader is not connected.");
+  if (!pendingRead) {
+    pendingRead = serialReader.read().finally(() => {
+      pendingRead = null;
+    });
+  }
+  const activeRead = pendingRead;
+  let timer;
+  try {
+    const result = await Promise.race([
+      activeRead,
+      new Promise((resolve) => {
+        timer = window.setTimeout(() => resolve({ timedOut: true }), timeoutMs);
+      }),
+    ]);
+    return result;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+async function writeSerial(text) {
+  if (!serialWriter) throw new Error("The serial writer is not connected.");
+  await serialWriter.write(new TextEncoder().encode(text));
+}
+
+async function readPrompt(timeoutMs, command) {
+  let response = "";
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const result = await readChunk(deadline - Date.now());
+    if (result.timedOut) break;
+    if (result.done) throw new Error("The serial device disconnected.");
+    response += new TextDecoder().decode(result.value, { stream: true });
+    if (response.length > 32768) response = response.slice(-16384);
+    const normalized = cleanSerialText(response).replace(/\r/g, "");
+    if (promptReceived(normalized)) {
+      const output = normalized.slice(0, normalized.lastIndexOf("siren>")).trim();
+      if (!output || output === command) {
+        response = "";
+        continue;
+      }
+      appendLogRow("RX", output || "(no output)");
+      recordPlayback(output);
+      if (commandWasRejected(output)) throw new Error(output);
+      if (command === "siren config begin") configTransactionActive = true;
+      if (["siren config commit", "siren config abort"].includes(command)) {
+        configTransactionActive = false;
+      }
+      return output;
+    }
+  }
+  throw new Error(`Timed out waiting for the firmware prompt after '${command}'.`);
+}
+
+async function waitForFirmwareIdentity(timeoutMs = 12000) {
+  let response = "";
+  const deadline = Date.now() + timeoutMs;
+  let probeCount = 0;
+  let nextProbeAt = 0;
+  let identitySeen = false;
+  const sendProbe = async () => {
+    appendLogRow("TX", "TOOL_ID");
+    await writeSerial("TOOL_ID\n");
+    probeCount += 1;
+  };
+  while (Date.now() < deadline) {
+    if (probeCount < 3 && !identitySeen && Date.now() >= nextProbeAt) {
+      await sendProbe();
+      nextProbeAt = Date.now() + (probeCount === 1 ? 2000 : 3000);
+    }
+    const result = await readChunk(Math.max(1, Math.min(500, deadline - Date.now())));
+    if (result.done) {
+      throw new Error("The serial device disconnected before firmware identity was verified.");
+    }
+    if (result.timedOut) continue;
+    response += new TextDecoder().decode(result.value, { stream: true });
+    if (response.length > 32768) response = response.slice(-16384);
+    const normalized = cleanSerialText(response).replace(/\r/g, "");
+    const identityIndex = normalized.indexOf(FIRMWARE_ID);
+    if (identityIndex >= 0) {
+      identitySeen = true;
+      const identityEnd = identityIndex + FIRMWARE_ID.length;
+      if (normalized.indexOf("siren>", identityEnd) >= 0) {
+        appendLogRow("RX", FIRMWARE_ID);
+        return FIRMWARE_ID;
+      }
+    }
+  }
+  const received = cleanSerialText(response).replace(/\r/g, "").trim().slice(-1000);
+  if (received) appendLogRow("RX", received);
+  throw new Error(
+    `Firmware identity was not verified. Expected ${FIRMWARE_ID}. ` +
+    (received ? `Last serial output:\n${received}` : "No serial output was received."),
+  );
+}
+
+async function exchange(command, timeoutMs = 6000) {
+  validateCommand(command);
+  if (!connected || !serialWriter || !serialReader) {
+    throw new Error("Connect to verified siren firmware before sending commands.");
+  }
+  appendLogRow("TX", command);
+  await writeSerial(`${command}\n`);
+  try {
+    return await readPrompt(timeoutMs, command);
+  } catch (error) {
+    if (error.message.startsWith("Timed out")) {
+      try {
+        await closeSerial();
+      } catch (closeError) {
+        throw new Error(`${error.message} ${closeError.message}`);
+      }
+    }
+    throw error;
+  }
+}
+
+function validateCommand(command) {
+  if (typeof command !== "string" || !command || command.length > 128) {
+    throw new Error("Enter one siren or audio command (maximum 128 characters).");
+  }
+  if (/[\x00-\x1f\x7f]/.test(command) || !/^(?:siren|audio)(?: [A-Za-z0-9_.-]+)*$/.test(command)) {
+    throw new Error("Only one firmware siren or audio command is allowed.");
+  }
+}
+
+async function connectDevice() {
+  if (!("serial" in navigator)) {
+    throw new Error("Web Serial is unavailable. Open this file in Chrome, Edge, or the VS Code Chromium browser.");
+  }
+  connectionStage = "Choose a USB serial device…";
+  connectionMessage.textContent = connectionStage;
+  renderState();
+  const port = await navigator.serial.requestPort();
+  connectionStage = "Opening serial port…";
+  connectionMessage.textContent = connectionStage;
+  renderState();
+  try {
+    await port.open({ baudRate: 115200 });
+  } catch (error) {
+    throw new Error(
+      `Could not open the selected serial port. Close ESP-IDF Monitor and other serial apps, then retry. ${error.message}`,
+    );
+  }
+  serialPort = port;
+  serialReader = port.readable.getReader();
+  serialWriter = port.writable.getWriter();
+  appendLogRow("INFO", "Serial port opened at 115200 baud. The board may reboot when the port opens.");
+  connectionStage = "Verifying firmware…";
+  connectionMessage.textContent = connectionStage;
+  renderState();
+  await waitForFirmwareIdentity();
+  connected = true;
+  playbackActive = false;
+  connectionStage = "Reading live device state…";
+  connectionMessage.textContent = connectionStage;
+  renderState();
+  appendLogRow("INFO", "Firmware identity verified; playback was not started.");
+  await sendCommand("siren status");
+  await sendCommand("siren config");
+  await sendCommand("audio status");
+  connectionStage = configLoaded
+    ? "Connected · live values loaded"
+    : "Connected · configuration incomplete";
+  connectionMessage.textContent = configLoaded
+    ? "Connected. Current siren settings, playback state, and audio status were read from the board."
+    : "Connected, but the firmware returned an incomplete configuration. Check the serial log.";
+  renderState();
+}
+
+async function closeSerial() {
+  const reader = serialReader;
+  const writer = serialWriter;
+  const port = serialPort;
+  serialReader = null;
+  serialWriter = null;
+  serialPort = null;
+  connected = false;
+  playbackActive = false;
+  configTransactionActive = false;
+  connectionStage = "Disconnected";
+  connectionMessage.textContent = "Disconnected. Connect again to read the device's current state.";
+  const cleanupErrors = [];
+  if (reader) {
+    try {
+      await reader.cancel();
+    } catch (error) {
+      cleanupErrors.push(`reader cancel: ${error.message}`);
+    } finally {
+      try {
+        reader.releaseLock();
+      } catch (error) {
+        cleanupErrors.push(`reader release: ${error.message}`);
+      }
+    }
+  }
+  if (writer) {
+    try {
+      await writer.close();
+    } catch (error) {
+      cleanupErrors.push(`writer close: ${error.message}`);
+    } finally {
+      try {
+        writer.releaseLock();
+      } catch (error) {
+        cleanupErrors.push(`writer release: ${error.message}`);
+      }
+    }
+  }
+  if (port) {
+    try {
+      await port.close();
+    } catch (error) {
+      cleanupErrors.push(`port close: ${error.message}`);
+    }
+  }
+  pendingRead = null;
+  clearDeviceSettingsControls(true);
+  clearDeviceSnapshot("Disconnected. Connect again to read the device's current state.");
+  renderState();
+  if (cleanupErrors.length) {
+    throw new Error(`Serial cleanup was incomplete: ${cleanupErrors.join("; ")}`);
+  }
+}
+
+function renderDeviceSnapshot() {
+  const sections = [
+    ["SIREN STATUS", deviceSnapshot.status],
+    ["SAVED DEVICE CONFIGURATION", deviceSnapshot.config],
+    ["AUDIO STATUS", deviceSnapshot.audio],
+  ].filter(([, output]) => output);
+  configOutput.textContent = sections.length
+    ? sections.map(([title, output]) => `${title}\n${output}`).join("\n\n")
+    : "No live device data has been read.";
+}
+
+function clearDeviceSnapshot(message) {
+  deviceSnapshot.status = "";
+  deviceSnapshot.config = "";
+  deviceSnapshot.audio = "";
+  configOutput.textContent = message;
+  deviceReadState.textContent = message;
+}
+
+function updateDeviceSnapshot(command, output) {
+  if (command === "siren status") deviceSnapshot.status = output;
+  if (command === "siren config") deviceSnapshot.config = output;
+  if (command === "audio status") deviceSnapshot.audio = output;
+  renderDeviceSnapshot();
+}
+
+function recordPlayback(text) {
+  const clean = cleanSerialText(text);
+  if (clean.includes("playback=active")) playbackActive = true;
+  if (clean.includes("playback=idle")) playbackActive = false;
+  renderState();
+}
+
+async function withBusy(action) {
+  if (busy) return;
+  setBusy(true);
+  try {
+    await action();
+  } catch (error) {
+    showError(error);
+  } finally {
+    setBusy(false);
+    if (pendingPlaybackStop) {
+      const command = pendingPlaybackStop;
+      pendingPlaybackStop = null;
+      if (playbackActive) {
+        await withBusy(() => sendCommand(command));
+      } else {
+        appendLogRow("INFO", `Queued '${command}' was not sent because playback is already idle.`);
+      }
+    }
+  }
+}
+
+function requestPlaybackStop(command) {
+  if (!connected || !playbackActive) return;
+  if (busy) {
+    if (command === "siren stop" || pendingPlaybackStop === null) {
+      pendingPlaybackStop = command;
+    }
+    appendLogRow(
+      "INFO",
+      `${pendingPlaybackStop === "siren stop" ? "Brake" : "Cancel"} queued until the current serial command completes.`,
+    );
+    return;
+  }
+  void withBusy(() => sendCommand(command));
+}
+
+async function sendCommand(command, confirmations = {}) {
+  if (/^siren(?: config)? reset$/.test(command) && confirmations.confirmReset !== true) {
+    throw new Error("Reset requires explicit confirmation.");
+  }
+  if (/^siren loop(?:\s+0+)?$/.test(command) && confirmations.confirmNoTimeout !== true) {
+    throw new Error("Starting playback without a safety timeout requires explicit confirmation.");
+  }
+  const output = await exchange(command, command === "siren benchmark" ? 20000 : 6000);
+  if (command !== "siren config") updateDeviceSnapshot(command, output);
+  if (command.startsWith("siren loop ") || /^siren [1-9]\d{0,3}$/.test(command)) {
+    playbackActive = true;
+  }
+  if (["siren stop", "siren brake", "siren 0"].includes(command)) {
+    await waitForIdle();
+  }
+  if (command === "siren config") {
+    applyDeviceConfig(output);
+  }
+  renderState();
+  return output;
+}
+
+async function waitForIdle(timeoutMs = 7000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const status = await exchange("siren status", Math.min(2000, deadline - Date.now()));
+    updateDeviceSnapshot("siren status", status);
+    if (status.includes("playback=idle")) return status;
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+  }
+  throw new Error("Playback stop was not confirmed; the device did not report playback=idle.");
+}
+
+function renderSettingsControls() {
+  const fieldsByKey = new Map([
+    ...SELECTS.map((field) => [field.key, { field, kind: "select" }]),
+    ...NUMBERS.map((field) => [field.key, { field, kind: "number" }]),
+    ...BOOLEANS.map((field) => [field.key, { field, kind: "boolean" }]),
+  ]);
+  const container = document.getElementById("settings-grid");
+  container.replaceChildren();
+  for (const group of SETTING_GROUPS) {
+    const section = document.createElement("section");
+    section.className = "settings-group";
+    const heading = document.createElement("h3");
+    heading.textContent = group.title;
+    section.append(heading);
+    const fields = document.createElement("div");
+    fields.className = "settings-fields";
+    for (const key of group.keys) {
+      const { field, kind } = fieldsByKey.get(key);
+      const control = document.createElement(kind === "select" ? "select" : "input");
+      control.className = "setting-control";
+      control.dataset.settingKey = key;
+      if (kind === "select") {
+        for (const value of field.options) {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          control.append(option);
+        }
+      } else if (kind === "boolean") {
+        control.type = "checkbox";
+      } else {
+        control.type = "number";
+        control.min = field.minimum;
+        control.max = field.maximum;
+        control.step = field.step;
+        control.inputMode = "decimal";
+      }
+      control.disabled = true;
+      control.addEventListener("change", onSettingChange);
+      if (kind === "select") {
+        const unknown = document.createElement("option");
+        unknown.value = "";
+        unknown.textContent = "Connect to read";
+        unknown.disabled = true;
+        unknown.selected = true;
+        control.prepend(unknown);
+      }
+      const label = document.createElement("label");
+      if (kind === "boolean") {
+        label.className = "toggle-setting";
+        const text = document.createElement("span");
+        text.textContent = field.label;
+        label.append(text, control);
+      } else {
+        label.className = "field";
+        const text = document.createElement("span");
+        text.textContent = field.label;
+        label.append(text, control);
+      }
+      fields.append(label);
+    }
+    section.append(fields);
+    container.append(section);
+  }
+  clearDeviceSettingsControls(true);
+}
+
+function updateSettingControls(values) {
+  currentSettings = { ...currentSettings, ...values };
+  for (const control of document.querySelectorAll("[data-setting-key]")) {
+    const value = values[control.dataset.settingKey];
+    if (value === undefined) continue;
+    if (control.type === "checkbox") {
+      control.checked = value === "1";
+      control.indeterminate = false;
+    } else {
+      control.value = value;
+    }
+  }
+}
+
+function clearDeviceSettingsControls(resetSettings = false) {
+  if (resetSettings) currentSettings = { ...DEFAULTS };
+  configLoaded = false;
+  document.getElementById("volume").value = "";
+  for (const control of document.querySelectorAll("[data-setting-key]")) {
+    if (control.type === "checkbox") {
+      control.checked = false;
+      control.indeterminate = true;
+    } else {
+      control.value = "";
+    }
+  }
+}
+
+function applyDeviceConfig(output) {
+  const parsed = parseDeviceConfig(output);
+  clearDeviceSettingsControls();
+  updateSettingControls(parsed);
+  if (parsed.volume !== undefined) document.getElementById("volume").value = parsed.volume;
+  const missing = Object.keys(DEFAULTS).filter((key) => !(key in parsed));
+  configLoaded = missing.length === 0;
+  deviceReadState.textContent = configLoaded
+    ? `${configTransactionActive ? "Staged settings (not yet committed to NVS)" : "Current settings read from device"} at ${new Date().toLocaleTimeString()}.`
+    : `Configuration was incomplete; missing values: ${missing.join(", ")}.`;
+  updateDeviceSnapshot("siren config", output);
+  if (connected) {
+    connectionStage = configLoaded
+      ? "Connected · live values loaded"
+      : "Connected · configuration incomplete";
+    renderState();
+  }
+  if (!configLoaded) {
+    appendLogRow("ERROR", `Device configuration was incomplete: ${missing.join(", ")}.`);
+  }
+}
+
+function parseDeviceConfig(text) {
+  const values = {};
+  for (const rawLine of text.split(/\r?\n/)) {
+    const section = rawLine.split(":", 1)[0].trim();
+    const mapping = section === "ports" ? PORT_KEYS : section === "mix" ? MIX_KEYS : CONFIG_KEYS;
+    const line = section === "ports" || section === "mix"
+      ? rawLine.slice(rawLine.indexOf(":") + 1)
+      : rawLine;
+    for (const match of line.matchAll(/([a-z_]+)=([^\s]+)/g)) {
+      const [, key, rawValue] = match;
+      if (!mapping[key]) continue;
+      let value = rawValue;
+      if (key === "rise" || key === "fall") value = value.replace(/s$/, "");
+      if (key === "volume") value = value.split("/", 1)[0];
+      values[mapping[key]] = value;
+    }
+  }
+  for (const key of ["radio", "thermal", "jitter"]) {
+    if (key in values) values[key] = values[key] === "on" ? "1" : "0";
+  }
+  return values;
+}
+
+function settingCommand(key, value) {
+  return SELECT_COMMANDS[key]
+    ? `${SELECT_COMMANDS[key]} ${value}`
+    : `siren set ${key} ${value}`;
+}
+
+function onSettingChange(event) {
+  const control = event.currentTarget;
+  const key = control.dataset.settingKey;
+  const value = control.type === "checkbox" ? (control.checked ? "1" : "0") : control.value;
+  const previous = currentSettings[key];
+  if (!control.checkValidity() || value === "") {
+    updateSettingControls({ [key]: previous });
+    showError(`${key} is outside its valid range.`);
+    return;
+  }
+  const start = Number(key === "sweep_start_hz" ? value : currentSettings.sweep_start_hz);
+  const end = Number(key === "sweep_end_hz" ? value : currentSettings.sweep_end_hz);
+  if (start >= end) {
+    updateSettingControls({ [key]: previous });
+    showError("Sweep end must be greater than sweep start.");
+    return;
+  }
+  withBusy(async () => {
+    let commandAccepted = false;
+    try {
+      await sendCommand(settingCommand(key, value));
+      commandAccepted = true;
+      currentSettings[key] = value;
+      await sendCommand("siren config");
+    } catch (error) {
+      if (connected) {
+        updateSettingControls({ [key]: commandAccepted ? value : previous });
+      }
+      throw error;
+    }
+  });
+}
+
+function validatePresetName(name) {
+  const normalized = name.trim();
+  if (!normalized || normalized.length > 48 || !/^[A-Za-z0-9][A-Za-z0-9 _().-]*$/.test(normalized)) {
+    throw new Error("Preset name must be 1–48 characters and use letters, numbers, spaces, and _ ( ) . -.");
+  }
+  return normalized;
+}
+
+function validateScene(values) {
+  if (!values || typeof values !== "object" || Array.isArray(values)) {
+    throw new Error("Preset configuration must be an object.");
+  }
+  const keys = Object.keys(DEFAULTS);
+  if (Object.keys(values).length !== keys.length || keys.some((key) => !(key in values))) {
+    throw new Error("Preset configuration has missing or unknown fields.");
+  }
+  const scene = Object.fromEntries(keys.map((key) => [key, String(values[key])]));
+  for (const { key, options } of SELECTS) {
+    if (!options.includes(scene[key])) throw new Error(`Unknown ${key} value.`);
+  }
+  for (const { key } of BOOLEANS) {
+    if (!["0", "1"].includes(scene[key])) throw new Error(`${key} must be 0 or 1.`);
+  }
+  const volume = Number(scene.volume);
+  if (!Number.isInteger(volume) || volume < 0 || volume > 100) {
+    throw new Error("Volume must be an integer from 0 to 100.");
+  }
+  const numbers = {};
+  for (const field of NUMBERS) {
+    const number = Number(scene[field.key]);
+    if (!Number.isFinite(number) || number < field.minimum || number > field.maximum) {
+      throw new Error(`${field.label} must be between ${field.minimum} and ${field.maximum}.`);
+    }
+    numbers[field.key] = number;
+  }
+  if (numbers.sweep_end_hz <= numbers.sweep_start_hz) {
+    throw new Error("Sweep end must be greater than sweep start.");
+  }
+  if (scene.source === "chopper") {
+    for (const index of CHOPPER_ACTIVE[scene.chopper]) {
+      if (numbers[PORT_COUNT_KEYS[index]] > 0 && numbers[PORT_MIX_KEYS[index]] > 0 &&
+          numbers.peak_rpm * numbers[PORT_COUNT_KEYS[index]] / 60 >= 24000) {
+        throw new Error("Chopper preset exceeds Nyquist; reduce RPM or port count.");
+      }
+    }
+  }
+  return scene;
+}
+
+function validatePresetCatalog(payload) {
+  if (!payload || ![1, 2, 3].includes(payload.schema_version) ||
+      !payload.presets || typeof payload.presets !== "object" || Array.isArray(payload.presets)) {
+    throw new Error("Preset file must contain schema_version 1, 2, or 3 and a presets object.");
+  }
+  const entries = Object.entries(payload.presets);
+  if (entries.length > 40) throw new Error("Preset file may contain at most 40 user presets.");
+  const presets = {};
+  const seen = new Set();
+  for (const [rawName, rawScene] of entries) {
+    const name = validatePresetName(rawName);
+    const folded = name.toLowerCase();
+    if (Object.keys(BUILTINS).some((builtin) => builtin.toLowerCase() === folded)) {
+      throw new Error(`'${name}' is a built-in preset and cannot be overwritten.`);
+    }
+    if (seen.has(folded)) throw new Error(`Preset name '${name}' is duplicated after normalization.`);
+    seen.add(folded);
+    const scene = payload.schema_version === 1
+      ? { ...DEFAULTS, ...rawScene }
+      : payload.schema_version === 2
+        ? { ...rawScene, distance_mix: DEFAULTS.distance_mix }
+        : rawScene;
+    presets[name] = validateScene(scene);
+  }
+  return { schema_version: 3, presets };
+}
+
+function saveLocalPresetCatalog(catalog) {
+  try {
+    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(catalog));
+  } catch (error) {
+    throw new Error(`Could not save browser presets: ${error.message}`);
+  }
+  presetCatalog = catalog;
+}
+
+function loadLocalPresets() {
+  try {
+    const encoded = localStorage.getItem(PRESET_STORAGE_KEY);
+    if (encoded) {
+      presetCatalog = validatePresetCatalog(JSON.parse(encoded));
+    } else {
+      const legacyEncoded = localStorage.getItem(LEGACY_PRESET_STORAGE_KEY);
+      if (legacyEncoded) {
+        presetCatalog = validatePresetCatalog(JSON.parse(legacyEncoded));
+        try {
+          localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presetCatalog));
+        } catch (error) {
+          showError(`Legacy presets loaded but could not be migrated: ${error.message}`);
+        }
+      }
+    }
+  } catch (error) {
+    showError(`Saved presets could not be loaded: ${error.message}`);
+    presetCatalog = { schema_version: 3, presets: {} };
+  }
+  renderPresetOptions();
+}
+
+function renderPresetOptions(selectedName = "Warning") {
+  const select = document.getElementById("preset-select");
+  select.replaceChildren();
+  const builtins = document.createElement("optgroup");
+  builtins.label = "Built-in";
+  for (const name of Object.keys(BUILTINS)) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    builtins.append(option);
+  }
+  select.append(builtins);
+  const saved = document.createElement("optgroup");
+  saved.label = "Saved in this browser";
+  for (const name of Object.keys(presetCatalog.presets).sort((a, b) => a.localeCompare(b))) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    saved.append(option);
+  }
+  if (saved.children.length) select.append(saved);
+  if ([...select.options].some((option) => option.value === selectedName)) select.value = selectedName;
+  updatePresetButtons();
+}
+
+function updatePresetButtons() {
+  const selected = document.getElementById("preset-select").value;
+  document.getElementById("apply-preset").disabled = !connected || busy || !selected;
+  document.getElementById("save-preset").disabled = !connected || busy || !configLoaded;
+  document.getElementById("delete-preset").disabled =
+    busy || !selected || Object.hasOwn(BUILTINS, selected);
+}
+
+function selectedPreset() {
+  const name = document.getElementById("preset-select").value;
+  const scene = Object.hasOwn(BUILTINS, name) ? BUILTINS[name] : presetCatalog.presets[name];
+  if (!scene) throw new Error("Select a valid preset.");
+  return { name, scene: validateScene(scene) };
+}
+
+function buildSceneCommands(scene) {
+  const commands = [
+    "siren config begin",
+    `siren preset ${scene.pattern}`,
+    `siren room ${scene.room}`,
+    `siren model ${scene.source}`,
+    `siren chopper ${scene.chopper}`,
+    "siren set sweep_end_hz 900",
+    `siren set sweep_start_hz ${scene.sweep_start_hz}`,
+    `siren set sweep_end_hz ${scene.sweep_end_hz}`,
+  ];
+  for (const field of NUMBERS) {
+    if (!["sweep_start_hz", "sweep_end_hz"].includes(field.key)) {
+      commands.push(`siren set ${field.key} ${scene[field.key]}`);
+    }
+  }
+  for (const { key } of BOOLEANS) commands.push(`siren set ${key} ${scene[key]}`);
+  commands.push(`audio volume ${scene.volume}`, "siren config commit", "siren config");
+  return commands;
+}
+
+async function applyScene(scene) {
+  const commands = buildSceneCommands(validateScene(scene));
+  let transactionOpen = false;
+  let commitAttempted = false;
+  let commitConfirmed = false;
+  try {
+    for (const command of commands) {
+      if (command === "siren config commit") commitAttempted = true;
+      const output = await exchange(command);
+      if (command === "siren config commit") commitConfirmed = true;
+      if (command === "siren config begin") transactionOpen = true;
+      if (["siren config commit", "siren config abort"].includes(command)) transactionOpen = false;
+      if (command === "siren config") {
+        applyDeviceConfig(output);
+      }
+    }
+  } catch (error) {
+    if (transactionOpen && !commitAttempted && connected) {
+      try {
+        await exchange("siren config abort");
+      } catch (abortError) {
+        appendLogRow("ERROR", `Could not confirm settings rollback: ${abortError.message}`);
+      }
+    }
+    if (commitAttempted && !commitConfirmed) {
+      throw new Error(`Settings commit could not be confirmed; read device configuration before retrying. ${error.message}`);
+    }
+    if (commitConfirmed) {
+      throw new Error(`Preset was committed, but the post-commit device read failed. ${error.message}`);
+    }
+    throw new Error(`Preset was not fully applied; staged changes were aborted. ${error.message}`);
+  }
+  configLoaded = true;
+}
+
+function triggerPresetDownload() {
+  if (!Object.keys(presetCatalog.presets).length) {
+    showError("There are no saved user presets to export.");
+    return;
+  }
+  const data = new Blob([`${JSON.stringify(presetCatalog, null, 2)}\n`], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(data);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "siren-presets.json";
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function importPresetFile(file) {
+  if (file.size > 65536) throw new Error("Preset files must be 64 KiB or smaller.");
+  const catalog = validatePresetCatalog(JSON.parse(await file.text()));
+  saveLocalPresetCatalog(catalog);
+  renderPresetOptions();
+}
+
+async function disconnectDevice() {
+  if (!connected) return;
+  if (configTransactionActive) await exchange("siren config abort");
+  if (playbackActive) {
+    await exchange("siren stop");
+    await waitForIdle();
+  }
+  await closeSerial();
+  clearDeviceSnapshot("Disconnected. Connect again to read the device's current state.");
+  connectionMessage.textContent = "Disconnected. Connect again to read the device's current state.";
+  appendLogRow("INFO", "Serial port disconnected.");
+}
+
+connectButton.addEventListener("click", () => withBusy(async () => {
+  connectionStage = "Choose a USB serial device…";
+  connectionMessage.textContent = connectionStage;
+  renderState();
+  try {
+    await connectDevice();
+  } catch (error) {
+    if (serialPort) {
+      try {
+        await closeSerial();
+      } catch (closeError) {
+        appendLogRow("ERROR", `Could not close the failed serial connection: ${closeError.message}`);
+      }
+    }
+    if (error.name === "NotFoundError") {
+      connectionStage = "Disconnected";
+      connectionMessage.textContent = "No device was selected.";
+      appendLogRow("INFO", "Device selection canceled.");
+      renderState();
+      return;
+    }
+    connectionStage = "Connection failed";
+    connectionMessage.textContent = error.message;
+    renderState();
+    throw error;
+  }
+}));
+
+disconnectButton.addEventListener("click", () => withBusy(disconnectDevice));
+
+document.getElementById("playback-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const timeout = Number(document.getElementById("safety-timeout").value);
+  if (!Number.isInteger(timeout) || timeout < 0 || timeout > 3600) {
+    showError("Safety timeout must be a whole number from 0 to 3600 seconds.");
+    return;
+  }
+  if (timeout === 0 &&
+      !window.confirm("Start without a firmware safety timeout? You must stop playback manually.")) return;
+  withBusy(() => sendCommand(`siren loop ${timeout}`, { confirmNoTimeout: timeout === 0 }));
+});
+
+document.getElementById("stop-button").addEventListener("click", () =>
+  requestPlaybackStop("siren stop"),
+);
+
+document.getElementById("cancel-button").addEventListener("click", () =>
+  requestPlaybackStop("siren cancel"),
+);
+
+document.getElementById("volume-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const volume = Number(document.getElementById("volume").value);
+  if (!Number.isInteger(volume) || volume < 0 || volume > 100) {
+    showError("Volume must be an integer from 0 to 100.");
+    return;
+  }
+  withBusy(async () => {
+    await sendCommand(`audio volume ${volume}`);
+    await sendCommand("siren config");
+    await sendCommand("audio status");
+  });
+});
+
+document.getElementById("read-status").addEventListener("click", () => withBusy(async () => {
+  await sendCommand("siren status");
+  await sendCommand("audio status");
+}));
+document.getElementById("read-config").addEventListener("click", () =>
+  withBusy(() => sendCommand("siren config")),
+);
+document.getElementById("refresh-config").addEventListener("click", () =>
+  withBusy(() => sendCommand("siren config")),
+);
+document.getElementById("run-benchmark").addEventListener("click", () =>
+  withBusy(() => sendCommand("siren benchmark")),
+);
+document.getElementById("preset-select").addEventListener("change", updatePresetButtons);
+
+document.getElementById("apply-preset").addEventListener("click", () => {
+  let preset;
+  try {
+    preset = selectedPreset();
+  } catch (error) {
+    showError(error);
+    return;
+  }
+  if (!window.confirm(`Apply "${preset.name}" to the device and save it to NVS?`)) return;
+  withBusy(() => applyScene(preset.scene));
+});
+
+document.getElementById("save-preset").addEventListener("click", () => {
+  if (!configLoaded || !connected) {
+    showError("Read a verified device configuration before saving a preset.");
+    return;
+  }
+  const dialog = document.getElementById("save-preset-dialog");
+  document.getElementById("preset-name").value = "";
+  dialog.showModal();
+  document.getElementById("preset-name").focus();
+});
+document.getElementById("cancel-save-preset").addEventListener("click", () =>
+  document.getElementById("save-preset-dialog").close(),
+);
+document.getElementById("save-preset-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  try {
+    const name = validatePresetName(document.getElementById("preset-name").value);
+    const existing = Object.keys(presetCatalog.presets).find((key) => key.toLowerCase() === name.toLowerCase());
+    if (existing && !window.confirm(`Replace the saved preset "${existing}"?`)) return;
+    const presets = { ...presetCatalog.presets };
+    if (existing) delete presets[existing];
+    presets[name] = validateScene(currentSettings);
+    saveLocalPresetCatalog(validatePresetCatalog({ schema_version: 3, presets }));
+    renderPresetOptions(name);
+    document.getElementById("save-preset-dialog").close();
+  } catch (error) {
+    showError(error);
+  }
+});
+
+document.getElementById("export-presets").addEventListener("click", triggerPresetDownload);
+document.getElementById("import-presets").addEventListener("click", () =>
+  document.getElementById("preset-file").click(),
+);
+document.getElementById("preset-file").addEventListener("change", async (event) => {
+  const [file] = event.currentTarget.files;
+  event.currentTarget.value = "";
+  if (!file) return;
+  try {
+    await importPresetFile(file);
+  } catch (error) {
+    showError(`Preset import failed: ${error.message}`);
+  }
+});
+document.getElementById("delete-preset").addEventListener("click", () => {
+  const name = document.getElementById("preset-select").value;
+  if (!Object.hasOwn(presetCatalog.presets, name)) {
+    showError("Built-in presets cannot be deleted.");
+    return;
+  }
+  if (!window.confirm(`Delete the saved preset "${name}" from this browser?`)) return;
+  const presets = { ...presetCatalog.presets };
+  delete presets[name];
+  try {
+    saveLocalPresetCatalog({ schema_version: 3, presets });
+    renderPresetOptions();
+  } catch (error) {
+    showError(error);
+  }
+});
+
+document.getElementById("command-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const command = commandInput.value.trim();
+  if (!command) return;
+  const isReset = /^siren(?: config)? reset$/.test(command);
+  const isUnboundedPlayback = /^siren loop(?:\s+0+)?$/.test(command);
+  if (isReset &&
+      !window.confirm("Replace saved NVS settings with factory defaults? Playback will not start.")) return;
+  if (isUnboundedPlayback &&
+      !window.confirm("Start with no firmware safety timeout? You must stop playback manually.")) return;
+  withBusy(async () => {
+    await sendCommand(command, {
+      confirmReset: isReset,
+      confirmNoTimeout: isUnboundedPlayback,
+    });
+    if (command === "siren config begin") {
+      deviceReadState.textContent = "Settings transaction active. Changes are staged in RAM and will not persist until commit.";
+    }
+    if (isReset || ["siren config load", "siren config commit", "siren config abort"].includes(command) ||
+        /^(?:siren (?:preset|room|model|chopper|set)|audio volume)\b/.test(command)) {
+      await sendCommand("siren config");
+    }
+    if (command.startsWith("audio volume ")) await sendCommand("audio status");
+    commandInput.value = "";
+  });
+});
+
+document.getElementById("clear-log").addEventListener("click", () => eventLog.replaceChildren());
+navigator.serial?.addEventListener("disconnect", (event) => {
+  if (event.target !== serialPort) return;
+  void closeSerial().then(() => {
+    appendLogRow("ERROR", "USB serial device disconnected.");
+  }).catch((error) => {
+    appendLogRow("ERROR", `USB device disconnected; serial cleanup failed: ${error.message}`);
+  });
+});
+window.addEventListener("pagehide", () => {
+  if (serialPort) void closeSerial().catch((error) => appendLogRow("ERROR", error.message));
+});
+
+renderSettingsControls();
+loadLocalPresets();
+if (!("serial" in navigator)) {
+  connectionStage = "Web Serial unavailable";
+  connectionMessage.textContent = "Open this file in Chrome, Edge, or the VS Code Chromium browser.";
+  connectionBadge.textContent = "Web Serial unavailable";
+  connectionBadge.className = "badge badge-error";
+  appendLogRow("ERROR", "Use a Chromium-based browser with Web Serial support, such as Chrome, Edge, or the VS Code browser.");
+}
+setBusy(false);
+window.setInterval(async () => {
+  if (!connected || !playbackActive || busy) return;
+  try {
+    await withBusy(() => sendCommand("siren status"));
+  } catch (error) {
+    showError(error);
+  }
+}, 1800);
+
+
+// Real-time oscilloscope visualizer
+(function initOscilloscope() {
+  const canvas = document.getElementById("siren-scope");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  let phase = 0;
+
+  function renderScope() {
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.fillStyle = "#080a0e";
+    ctx.fillRect(0, 0, w, h);
+
+    // Grid lines
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    for (let x = 0; x < w; x += 40) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+    }
+    ctx.stroke();
+
+    // Waveform
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = playbackActive ? "#00e5a3" : "#303a48";
+    ctx.shadowBlur = playbackActive ? 8 : 0;
+    ctx.shadowColor = "#00e5a3";
+    ctx.beginPath();
+
+    const sweepStart = Number(currentSettings.sweep_start_hz) || 210;
+    const wobble = Number(currentSettings.wobble_hz) || 2.2;
+    const modDepth = Number(currentSettings.modulation_depth) || 0.26;
+    const amp = playbackActive ? Math.min(1.0, Math.max(0.15, Number(currentSettings.amplitude) || 0.6)) : 0.04;
+
+    for (let x = 0; x < w; x++) {
+      const t = (x / w) * 4 * Math.PI;
+      const freqMod = 1.0 + modDepth * Math.sin(t * wobble * 0.1 + phase * 0.5);
+      const y = (h / 2) + Math.sin(t * (sweepStart / 50) * freqMod + phase) * (h * 0.38 * amp);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Status pill overlay
+    ctx.fillStyle = playbackActive ? "#00e5a3" : "#556274";
+    ctx.font = "10px ui-monospace, monospace";
+    ctx.fillText(playbackActive ? "ACTIVE · SYNTH OSCILLATING" : "STANDBY · IDLE", 10, 16);
+
+    phase += playbackActive ? 0.18 : 0.02;
+    requestAnimationFrame(renderScope);
+  }
+  renderScope();
+})();
+
+</script>
+</body>
+</html>
