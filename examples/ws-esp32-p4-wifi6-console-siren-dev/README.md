@@ -138,7 +138,7 @@ Core synthesizer remains independent of NVS and board/console code.
 
 The console uses the board's default UART0 at 115200 baud. This is the same
 serial port used for the UART monitor and flashing. The project-root standalone
-[HTML browser console](../../tools-web/siren_console.html) connects through the
+[HTML browser console](../../tools-web/index.html) connects through the
 browser's Web Serial API without a Python bridge or local server and is the
 only supported PC serial console. Users do not need Python, dependencies, or a
 batch launcher. Close ESP-IDF Monitor before connecting with the browser.

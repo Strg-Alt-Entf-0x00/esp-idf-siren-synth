@@ -1,725 +1,4 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-    <title>Siren Synth · Browser Console</title>
-    <style>
-:root {
-  color-scheme: dark;
-  --page: #0a0d12;
-  --panel: #11151c;
-  --panel-raised: #181d26;
-  --panel-highlight: #1f2532;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.15);
-  --text: #f0f4f8;
-  --muted: #8b96a5;
-  --accent: #00e5a3;
-  --accent-glow: rgba(0, 229, 163, 0.25);
-  --cyan: #00f0ff;
-  --cyan-glow: rgba(0, 240, 255, 0.2);
-  --danger: #ff4d5a;
-  --danger-bg: rgba(255, 77, 90, 0.15);
-  --warning: #ffb830;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Inter, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(0, 229, 163, 0.06) 0%, transparent 45%),
-    radial-gradient(circle at 88% 8%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
-    var(--page);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.5;
-}
-
-button,
-input,
-select {
-  font: inherit;
-}
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.topbar,
-main,
-footer {
-  width: min(1180px, calc(100% - 40px));
-  margin-inline: auto;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 30px 0 20px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 24px;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.eyebrow {
-  margin: 0 0 6px;
-  color: var(--accent);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-h1,
-h2,
-p {
-  margin-top: 0;
-}
-
-h1 {
-  margin-bottom: 0;
-  font-size: clamp(1.5rem, 3.2vw, 2.1rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-}
-
-h1 span {
-  color: var(--muted);
-  font-weight: 400;
-  margin-left: 4px;
-}
-
-h2 {
-  margin-bottom: 16px;
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 8px 16px;
-  color: var(--muted);
-  background: var(--panel-raised);
-  font-size: 0.82rem;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: all 200ms ease;
-}
-
-.badge::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-}
-
-.badge-connected {
-  border-color: rgba(0, 229, 163, 0.4);
-  color: var(--accent);
-  background: rgba(0, 229, 163, 0.08);
-  box-shadow: 0 0 16px var(--accent-glow);
-}
-
-.badge-connected::before {
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-  animation: pulse-dot 2s infinite;
-}
-
-.badge-error {
-  border-color: rgba(255, 77, 90, 0.4);
-  color: var(--danger);
-  background: var(--danger-bg);
-}
-
-.badge-error::before {
-  background: var(--danger);
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
-
-main {
-  display: grid;
-  gap: 20px;
-  padding-bottom: 32px;
-}
-
-.panel {
-  min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 22px;
-  background: var(--panel);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-  transition: border-color 200ms ease;
-}
-
-.panel:hover {
-  border-color: var(--line-strong);
-}
-
-.section-heading,
-.connection-controls,
-.button-row,
-.command-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.section-heading {
-  align-items: center;
-}
-
-.section-heading h2 {
-  margin-bottom: 0;
-}
-
-.connection-controls {
-  margin-top: 16px;
-}
-
-.field {
-  display: grid;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 500;
-}
-
-.grow {
-  flex: 1;
-}
-
-input,
-select {
-  width: 100%;
-  min-height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--text);
-  background: var(--page);
-  font-size: 0.88rem;
-  transition: all 150ms ease;
-}
-
-input:hover:not(:disabled),
-select:hover:not(:disabled) {
-  border-color: var(--line-strong);
-}
-
-input:focus,
-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-
-input:disabled,
-select:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 42px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 9px 18px;
-  color: var(--text);
-  font-size: 0.86rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 140ms ease;
-  user-select: none;
-}
-
-.button:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.button:disabled {
-  cursor: not-allowed;
-  opacity: 0.38;
-}
-
-.primary {
-  color: #061510;
-  background: var(--accent);
-  box-shadow: 0 2px 12px var(--accent-glow);
-}
-
-.secondary {
-  border-color: var(--line);
-  background: var(--panel-raised);
-}
-
-.secondary:hover:not(:disabled) {
-  background: var(--panel-highlight);
-  border-color: var(--line-strong);
-}
-
-.danger {
-  border-color: rgba(255, 77, 90, 0.4);
-  color: #fff;
-  background: var(--danger);
-  box-shadow: 0 2px 12px rgba(255, 77, 90, 0.25);
-}
-
-.hint {
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.stack {
-  display: grid;
-  align-items: flex-end;
-  gap: 14px;
-}
-
-.device-panel {
-  grid-column: 1 / -1;
-}
-
-.settings-panel {
-  grid-column: 1 / -1;
-}
-
-.presets-panel {
-  grid-column: 1 / -1;
-}
-
-.preset-controls {
-  margin-top: 16px;
-}
-
-.modal {
-  width: min(460px, calc(100% - 32px));
-  border: 1px solid var(--line-strong);
-  border-radius: 14px;
-  padding: 24px;
-  color: var(--text);
-  background: var(--panel);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
-}
-
-.modal::backdrop {
-  background: rgba(6, 8, 12, 0.8);
-  backdrop-filter: blur(6px);
-}
-
-.modal h2 {
-  margin-bottom: 18px;
-}
-
-.modal .button-row {
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.settings-group {
-  min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 16px;
-  background: var(--panel-raised);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.settings-group h3 {
-  margin: 0 0 14px;
-  color: var(--accent);
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 8px;
-}
-
-.settings-fields {
-  display: grid;
-  gap: 12px;
-}
-
-.settings-fields input,
-.settings-fields select {
-  min-height: 38px;
-  padding: 7px 10px;
-  font-size: 0.84rem;
-}
-
-.toggle-setting {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 38px;
-  color: var(--text);
-  font-size: 0.84rem;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.toggle-setting input {
-  width: 20px;
-  min-height: 20px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.config-output {
-  overflow: auto;
-  min-height: 100px;
-  max-height: 280px;
-  margin: 16px 0 0;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 14px;
-  color: #c9d8e8;
-  background: #080a0e;
-  font: 0.82rem/1.6 ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.console-panel {
-  min-height: 320px;
-}
-
-.command-row {
-  margin-top: 18px;
-}
-
-code {
-  color: var(--accent);
-  background: rgba(0, 229, 163, 0.1);
-  padding: 2px 5px;
-  border-radius: 4px;
-  font-size: 0.88em;
-}
-
-.event-log {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow: auto;
-  max-height: 360px;
-  margin: 16px 0 0;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px;
-  list-style: none;
-  background: #080a0e;
-}
-
-.log-entry {
-  display: grid;
-  grid-template-columns: 85px 56px minmax(0, 1fr);
-  gap: 10px;
-  padding: 5px 8px;
-  color: #cad2db;
-  font: 0.78rem/1.45 ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
-  border-radius: 4px;
-}
-
-.log-entry:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.log-entry time {
-  color: #556274;
-}
-
-.log-level {
-  display: inline-block;
-  font-weight: 700;
-}
-
-.log-tx .log-level {
-  color: var(--cyan);
-}
-
-.log-rx .log-level,
-.log-info .log-level {
-  color: var(--accent);
-}
-
-.log-error .log-level {
-  color: var(--danger);
-}
-
-.log-message {
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid var(--line);
-  padding: 20px 0 32px;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-@media (max-width: 840px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 720px) {
-  .topbar,
-  .section-heading,
-  .connection-controls,
-  .command-row,
-  footer {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .device-panel {
-    grid-column: auto;
-  }
-
-  .settings-panel {
-    grid-column: auto;
-  }
-
-  .presets-panel {
-    grid-column: auto;
-  }
-
-  .section-heading .button-row {
-    flex-wrap: wrap;
-  }
-
-  .button-row > .button,
-  .connection-controls > .button,
-  .command-row > .button {
-    flex: 1;
-  }
-
-  .log-entry {
-    grid-template-columns: 70px 48px minmax(0, 1fr);
-    gap: 6px;
-    font-size: 0.72rem;
-  }
-}
-</style>
-  </head>
-  <body>
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">WAVESHARE ESP32-P4 WIFI6 · STANDALONE BROWSER TOOL</p>
-        <h1>Siren Synth <span>Browser Console</span></h1>
-      </div>
-      <div class="topbar-actions">
-        <div id="connection-badge" class="badge" role="status">Disconnected</div>
-      </div>
-    </header>
-
-    <main>
-      <section class="panel connection-panel" aria-labelledby="connection-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">USB SERIAL · WEB SERIAL</p>
-            <h2 id="connection-title">Device connection</h2>
-          </div>
-        </div>
-        <div class="connection-controls">
-          <p class="hint">Use Chrome, Edge, or the VS Code Chromium browser. Press Connect to choose a USB serial device in the browser; no server or Python bridge is used. Close ESP-IDF Monitor and other serial apps first because the UART can only be opened by one app at a time.</p>
-          <button id="connect-button" class="button primary" type="button">Choose device and connect</button>
-          <button id="disconnect-button" class="button secondary" type="button" disabled>Disconnect</button>
-        </div>
-        <p class="hint">Opening the serial port may reset the board. Firmware identity is verified before controls are enabled; playback never starts on connect.</p>
-        <p id="connection-message" class="hint" role="status">Ready. Connect to select the board and read its live state.</p>
-      </section>
-
-      <section class="dashboard" aria-label="Device controls">
-        <article class="panel">
-          <p class="eyebrow">PLAYBACK</p>
-          <h2>Signal control</h2>
-          <canvas id="siren-scope" width="480" height="80" style="width:100%; height:80px; border-radius:8px; background:#080a0e; border:1px solid var(--line); margin-bottom:14px;"></canvas>
-          <form id="playback-form" class="stack">
-            <label class="field">
-              <span>Firmware safety timeout (seconds)</span>
-              <input id="safety-timeout" type="number" min="0" max="3600" step="1" value="30" inputmode="numeric">
-            </label>
-            <div class="button-row">
-              <button id="start-button" class="button primary" type="submit" disabled>Start current pattern</button>
-              <button id="cancel-button" class="button secondary" type="button" disabled>Cancel · wind down</button>
-            </div>
-            <div class="button-row">
-              <button id="stop-button" class="button danger" type="button" disabled>Brake now</button>
-            </div>
-          </form>
-          <p class="hint">Cancel winds down over about 3× the saved Motor Fall time. Brake now stops quickly and can interrupt a wind-down. Use a safety timeout for continuous playback.</p>
-        </article>
-
-        <article class="panel">
-          <p class="eyebrow">OUTPUT</p>
-          <h2>Speaker volume</h2>
-          <form id="volume-form" class="stack">
-            <label class="field">
-              <span>Volume (0–100)</span>
-              <input id="volume" type="number" min="0" max="100" step="1" placeholder="Connect to read" inputmode="numeric">
-            </label>
-            <button id="volume-button" class="button secondary" type="submit" disabled>Apply volume</button>
-          </form>
-          <p class="hint">Accepted volume changes are saved by the firmware in NVS.</p>
-        </article>
-
-        <article class="panel device-panel">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">READ-ONLY SNAPSHOT</p>
-              <h2>Device configuration</h2>
-            </div>
-            <div class="button-row">
-              <button id="read-status" class="button secondary" type="button" disabled>Read status</button>
-              <button id="read-config" class="button secondary" type="button" disabled>Read config</button>
-              <button id="run-benchmark" class="button secondary" type="button" disabled>Run DSP benchmark</button>
-            </div>
-          </div>
-          <p id="device-read-state" class="hint" role="status">Device values have not been read. Connect to show actual firmware settings; factory defaults are not shown as live values.</p>
-          <pre id="device-config" class="config-output" aria-live="polite">Connect to a verified device to read its configuration.</pre>
-        </article>
-
-        <article class="panel presets-panel">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">LOCAL PRESETS</p>
-              <h2>Sound library</h2>
-            </div>
-            <div class="button-row preset-actions">
-              <button id="save-preset" class="button secondary" type="button" disabled>Save current as…</button>
-              <button id="export-presets" class="button secondary" type="button">Export</button>
-              <button id="import-presets" class="button secondary" type="button">Import</button>
-              <input id="preset-file" type="file" accept=".json,application/json" hidden>
-            </div>
-          </div>
-          <div class="connection-controls preset-controls">
-            <label class="field grow">
-              <span>Built-in and saved presets</span>
-              <select id="preset-select" aria-label="Sound preset"></select>
-            </label>
-            <button id="apply-preset" class="button primary" type="button" disabled>Apply preset</button>
-            <button id="delete-preset" class="button danger" type="button" disabled>Delete saved preset</button>
-          </div>
-          <p class="hint">Presets are stored in this browser profile. Import/export transfers user presets as JSON; applying a preset updates the complete configuration and commits NVS once without starting playback.</p>
-        </article>
-
-        <article class="panel settings-panel">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">SYNTHESIS CONTROLS</p>
-              <h2>Sound configuration</h2>
-            </div>
-            <button id="refresh-config" class="button secondary" type="button" disabled>Reload from device</button>
-          </div>
-          <p class="hint">A setting is sent when you finish editing it and is saved to device NVS. A new pattern applies on the next playback. Distance Character is experimental: an uncalibrated creative filter/level effect, not a physical distance model, and not acoustically accepted.</p>
-          <div id="settings-grid" class="settings-grid">Loading configuration controls…</div>
-        </article>
-      </section>
-
-      <section class="panel console-panel" aria-labelledby="console-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">FIRMWARE CLI</p>
-            <h2 id="console-title">Command console</h2>
-          </div>
-          <button id="clear-log" class="button secondary" type="button">Clear view</button>
-        </div>
-        <form id="command-form" class="command-row">
-          <label class="field grow">
-            <span>One <code>siren</code> or <code>audio</code> command</span>
-            <input id="command-input" type="text" maxlength="128" autocomplete="off" spellcheck="false" placeholder="siren config" disabled>
-          </label>
-          <button id="send-command" class="button primary" type="submit" disabled>Send</button>
-        </form>
-        <p class="hint">Commands go directly to the verified firmware CLI, never to a PC shell. Reset commands require an additional confirmation.</p>
-        <ol id="event-log" class="event-log" aria-live="polite" aria-label="Serial event log"></ol>
-      </section>
-    </main>
-    <dialog id="save-preset-dialog" class="modal">
-      <form id="save-preset-form" method="dialog">
-        <p class="eyebrow">LOCAL PRESET</p>
-        <h2>Save current settings</h2>
-        <label class="field">
-          <span>Preset name</span>
-          <input id="preset-name" type="text" minlength="1" maxlength="48" autocomplete="off" required>
-        </label>
-        <p class="hint">Names can use letters, numbers, spaces, and _ ( ) . -.</p>
-        <div class="button-row">
-          <button id="cancel-save-preset" class="button secondary" type="button">Cancel</button>
-          <button class="button primary" type="submit">Save preset</button>
-        </div>
-      </form>
-    </dialog>
-    <footer>
-      <span>Single HTML file · no server or Python</span>
-      <span>Playback remains stopped unless you explicitly start it.</span>
-    </footer>
-  <script>
+"use strict";
 "use strict";
 
 const FIRMWARE_ID = "TOOL_ID:esp-idf-siren-synth:console_siren_dev:3";
@@ -825,33 +104,33 @@ const PORT_MIX_KEYS = [
   "mix_undertone", "mix_overtone",
 ];
 const SETTING_GROUPS = [
-  { title: "Signal", keys: ["pattern", "amplitude", "sweep_start_hz", "sweep_end_hz", "rotor_hz", "modulation_depth", "wobble_hz", "attack_ms", "release_ms", "duration_ms"] },
-  { title: "Room and effects", keys: ["room", "room_size", "room_mix", "radio_mix", "distance_mix", "radio", "thermal", "jitter"] },
-  { title: "Chopper and RPM", keys: ["source", "chopper", "peak_rpm", "motor_rise_s", "motor_fall_s", "rotor_high_ports", "rotor_low_ports", "vanes_high", "vanes_low", "undertone_ports", "overtone_ports", "mix_rotor_high", "mix_rotor_low", "mix_vanes_high", "mix_vanes_low", "mix_undertone", "mix_overtone"] },
+  { id: "signal", title: "Signal", keys: ["pattern", "amplitude", "sweep_start_hz", "sweep_end_hz", "rotor_hz", "modulation_depth", "wobble_hz", "attack_ms", "release_ms", "duration_ms"] },
+  { id: "room", title: "Room & effects", keys: ["room", "room_size", "room_mix", "radio_mix", "distance_mix", "radio", "thermal", "jitter"] },
+  { id: "chopper", title: "Chopper & RPM", keys: ["source", "chopper", "peak_rpm", "motor_rise_s", "motor_fall_s", "rotor_high_ports", "rotor_low_ports", "vanes_high", "vanes_low", "undertone_ports", "overtone_ports", "mix_rotor_high", "mix_rotor_low", "mix_vanes_high", "mix_vanes_low", "mix_undertone", "mix_overtone"] },
 ];
 
-const connectButton = document.getElementById("connect-button");
-const disconnectButton = document.getElementById("disconnect-button");
+const volumeSlider = document.getElementById("header-volume-slider");
+const volumeValue = document.getElementById("header-volume-value");
+const headerVolume = document.getElementById("header-volume");
 const connectionMessage = document.getElementById("connection-message");
 const commandInput = document.getElementById("command-input");
 const eventLog = document.getElementById("event-log");
-const configOutput = document.getElementById("device-config");
 const connectionBadge = document.getElementById("connection-badge");
 let connected = false;
 let busy = false;
 let pendingPlaybackStop = null;
-let currentSettings = { ...DEFAULTS };
+let currentSettings = {};
 let presetCatalog = { schema_version: 3, presets: {} };
+let lastPresetSelection = "";
 let configLoaded = false;
-let playbackActive = false;
+let playbackActive = null;
+let deviceVolume = null;
 let connectionStage = "Disconnected";
 let serialPort = null;
 let serialReader = null;
 let serialWriter = null;
 let pendingRead = null;
 let configTransactionActive = false;
-const deviceSnapshot = { status: "", config: "", audio: "" };
-const deviceReadState = document.getElementById("device-read-state");
 
 function appendLogRow(level, text) {
   const row = document.createElement("li");
@@ -872,7 +151,9 @@ function appendLogRow(level, text) {
 }
 
 function showError(error) {
-  appendLogRow("ERROR", error instanceof Error ? error.message : String(error));
+  const message = error instanceof Error ? error.message : String(error);
+  connectionMessage.textContent = message;
+  appendLogRow("ERROR", message);
 }
 
 function cleanSerialText(text) {
@@ -889,13 +170,18 @@ function commandWasRejected(text) {
 
 function setBusy(value) {
   busy = value;
+  const availableWhileDisconnected = [
+    "export-presets", "import-presets", "btnConnect", "btnToggleTerm", "btnHelp",
+    "close-help-dialog",
+    "drawerCopyBtn", "drawerDownloadBtn", "drawerClearBtn", "drawerCloseBtn",
+  ];
   for (const button of document.querySelectorAll("button")) {
-    if (!["clear-log", "export-presets", "import-presets"].includes(button.id)) {
-      button.disabled = value || (!connected && button.id !== "connect-button");
+    if (!availableWhileDisconnected.includes(button.id)) {
+      button.disabled = value || (!connected && button.id !== "btnConnect");
+    } else if (button.id === "btnConnect" || button.id === "btnToggleTerm") {
+      button.disabled = value;
     }
   }
-  connectButton.disabled = value || connected;
-  disconnectButton.disabled = value || !connected;
   commandInput.disabled = value || !connected;
   for (const control of document.querySelectorAll("[data-setting-key]")) {
     control.disabled = value || !connected;
@@ -908,16 +194,29 @@ function renderState() {
   const failed = connectionStage === "Connection failed" ||
     connectionStage === "Web Serial unavailable";
   connectionBadge.className = `badge ${connected ? "badge-connected" : failed ? "badge-error" : ""}`;
-  document.getElementById("start-button").disabled = !connected || busy;
-  document.getElementById("cancel-button").disabled = !connected || !playbackActive;
-  document.getElementById("stop-button").disabled = !connected || !playbackActive;
-  document.getElementById("volume-button").disabled = !connected || busy;
-  document.getElementById("read-status").disabled = !connected || busy;
-  document.getElementById("read-config").disabled = !connected || busy;
+  const btnConnect = document.getElementById("btnConnect");
+  if (btnConnect) {
+    btnConnect.classList.toggle("connected", connected);
+    btnConnect.dataset.tooltip = connected ? "Disconnect ESP32" : "Connect ESP32 (Web Serial)";
+    btnConnect.setAttribute("aria-label", connected ? "Disconnect ESP32" : "Connect ESP32");
+    btnConnect.setAttribute("aria-pressed", String(connected));
+  }
+  const playbackButton = document.getElementById("playback-button");
+  const playbackIsActive = playbackActive === true;
+  const playbackLabel = playbackIsActive ? "Brake now" : "Start current pattern";
+  playbackButton.disabled = !connected || (busy && !playbackIsActive);
+  playbackButton.dataset.tooltip = playbackLabel;
+  playbackButton.setAttribute("aria-label", playbackLabel);
+  playbackButton.setAttribute("aria-pressed", String(playbackIsActive));
+  playbackButton.classList.toggle("danger", playbackIsActive);
+  playbackButton.classList.toggle("primary", !playbackIsActive);
+  playbackButton.querySelector(".playback-play-icon").hidden = playbackIsActive;
+  playbackButton.querySelector(".playback-stop-icon").hidden = !playbackIsActive;
+  document.getElementById("cancel-button").disabled = !connected || playbackActive !== true;
+  volumeSlider.disabled = !connected || busy || deviceVolume === null;
   document.getElementById("refresh-config").disabled = !connected || busy;
   document.getElementById("run-benchmark").disabled = !connected || busy;
   document.getElementById("save-preset").disabled = !connected || busy || !configLoaded;
-  document.getElementById("apply-preset").disabled = !connected || busy;
   document.getElementById("send-command").disabled = !connected || busy;
   updatePresetButtons();
 }
@@ -1055,14 +354,14 @@ async function connectDevice() {
     throw new Error("Web Serial is unavailable. Open this file in Chrome, Edge, or the VS Code Chromium browser.");
   }
   connectionStage = "Choose a USB serial device…";
-  connectionMessage.textContent = connectionStage;
+  connectionMessage.textContent = "";
   renderState();
   const port = await navigator.serial.requestPort();
   connectionStage = "Opening serial port…";
-  connectionMessage.textContent = connectionStage;
   renderState();
+  const baud = 115200;
   try {
-    await port.open({ baudRate: 115200 });
+    await port.open({ baudRate: baud });
   } catch (error) {
     throw new Error(
       `Could not open the selected serial port. Close ESP-IDF Monitor and other serial apps, then retry. ${error.message}`,
@@ -1071,15 +370,13 @@ async function connectDevice() {
   serialPort = port;
   serialReader = port.readable.getReader();
   serialWriter = port.writable.getWriter();
-  appendLogRow("INFO", "Serial port opened at 115200 baud. The board may reboot when the port opens.");
+  appendLogRow("INFO", `Serial port opened at ${baud} baud. The board may reboot when the port opens.`);
   connectionStage = "Verifying firmware…";
-  connectionMessage.textContent = connectionStage;
   renderState();
   await waitForFirmwareIdentity();
   connected = true;
-  playbackActive = false;
+  playbackActive = null;
   connectionStage = "Reading live device state…";
-  connectionMessage.textContent = connectionStage;
   renderState();
   appendLogRow("INFO", "Firmware identity verified; playback was not started.");
   await sendCommand("siren status");
@@ -1088,9 +385,7 @@ async function connectDevice() {
   connectionStage = configLoaded
     ? "Connected · live values loaded"
     : "Connected · configuration incomplete";
-  connectionMessage.textContent = configLoaded
-    ? "Connected. Current siren settings, playback state, and audio status were read from the board."
-    : "Connected, but the firmware returned an incomplete configuration. Check the serial log.";
+  renderDeviceStatusMessage();
   renderState();
 }
 
@@ -1102,10 +397,10 @@ async function closeSerial() {
   serialWriter = null;
   serialPort = null;
   connected = false;
-  playbackActive = false;
+  playbackActive = null;
   configTransactionActive = false;
   connectionStage = "Disconnected";
-  connectionMessage.textContent = "Disconnected. Connect again to read the device's current state.";
+  connectionMessage.textContent = "";
   const cleanupErrors = [];
   if (reader) {
     try {
@@ -1142,44 +437,31 @@ async function closeSerial() {
   }
   pendingRead = null;
   clearDeviceSettingsControls(true);
-  clearDeviceSnapshot("Disconnected. Connect again to read the device's current state.");
   renderState();
   if (cleanupErrors.length) {
     throw new Error(`Serial cleanup was incomplete: ${cleanupErrors.join("; ")}`);
   }
 }
 
-function renderDeviceSnapshot() {
-  const sections = [
-    ["SIREN STATUS", deviceSnapshot.status],
-    ["SAVED DEVICE CONFIGURATION", deviceSnapshot.config],
-    ["AUDIO STATUS", deviceSnapshot.audio],
-  ].filter(([, output]) => output);
-  configOutput.textContent = sections.length
-    ? sections.map(([title, output]) => `${title}\n${output}`).join("\n\n")
-    : "No live device data has been read.";
-}
-
-function clearDeviceSnapshot(message) {
-  deviceSnapshot.status = "";
-  deviceSnapshot.config = "";
-  deviceSnapshot.audio = "";
-  configOutput.textContent = message;
-  deviceReadState.textContent = message;
-}
-
-function updateDeviceSnapshot(command, output) {
-  if (command === "siren status") deviceSnapshot.status = output;
-  if (command === "siren config") deviceSnapshot.config = output;
-  if (command === "audio status") deviceSnapshot.audio = output;
-  renderDeviceSnapshot();
-}
-
 function recordPlayback(text) {
   const clean = cleanSerialText(text);
   if (clean.includes("playback=active")) playbackActive = true;
   if (clean.includes("playback=idle")) playbackActive = false;
+  renderDeviceStatusMessage();
   renderState();
+}
+
+function renderDeviceStatusMessage() {
+  if (!connected) return;
+  const playback = playbackActive === null
+    ? "Playback status not read"
+    : `Playback ${playbackActive ? "active" : "idle"}`;
+  const configuration = !configLoaded
+    ? "configuration incomplete"
+    : configTransactionActive
+      ? "settings staged"
+      : "settings loaded";
+  connectionMessage.textContent = `${playback} · ${configuration}`;
 }
 
 async function withBusy(action) {
@@ -1194,17 +476,20 @@ async function withBusy(action) {
     if (pendingPlaybackStop) {
       const command = pendingPlaybackStop;
       pendingPlaybackStop = null;
-      if (playbackActive) {
+      if (playbackActive === true || (command === "siren stop" && playbackActive === null)) {
         await withBusy(() => sendCommand(command));
+      } else if (playbackActive === false) {
+        appendLogRow("INFO", `Queued '${command}' was not sent because firmware reported playback idle.`);
       } else {
-        appendLogRow("INFO", `Queued '${command}' was not sent because playback is already idle.`);
+        appendLogRow("INFO", `Queued '${command}' was not sent because active playback was not confirmed.`);
       }
     }
   }
 }
 
 function requestPlaybackStop(command) {
-  if (!connected || !playbackActive) return;
+  if (!connected || (command === "siren cancel" && playbackActive !== true) ||
+      (command === "siren stop" && playbackActive === false)) return;
   if (busy) {
     if (command === "siren stop" || pendingPlaybackStop === null) {
       pendingPlaybackStop = command;
@@ -1226,9 +511,9 @@ async function sendCommand(command, confirmations = {}) {
     throw new Error("Starting playback without a safety timeout requires explicit confirmation.");
   }
   const output = await exchange(command, command === "siren benchmark" ? 20000 : 6000);
-  if (command !== "siren config") updateDeviceSnapshot(command, output);
-  if (command.startsWith("siren loop ") || /^siren [1-9]\d{0,3}$/.test(command)) {
-    playbackActive = true;
+  if ((command.startsWith("siren loop ") || /^siren [1-9]\d{0,3}$/.test(command)) &&
+      playbackActive === null) {
+    await exchange("siren status");
   }
   if (["siren stop", "siren brake", "siren 0"].includes(command)) {
     await waitForIdle();
@@ -1244,7 +529,6 @@ async function waitForIdle(timeoutMs = 7000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const status = await exchange("siren status", Math.min(2000, deadline - Date.now()));
-    updateDeviceSnapshot("siren status", status);
     if (status.includes("playback=idle")) return status;
     await new Promise((resolve) => window.setTimeout(resolve, 100));
   }
@@ -1262,9 +546,12 @@ function renderSettingsControls() {
   for (const group of SETTING_GROUPS) {
     const section = document.createElement("section");
     section.className = "settings-group";
-    const heading = document.createElement("h3");
+    section.dataset.settingGroup = group.id;
+    section.setAttribute("aria-labelledby", `settings-heading-${group.id}`);
+    const heading = document.createElement("h2");
+    heading.className = "settings-group-title";
+    heading.id = `settings-heading-${group.id}`;
     heading.textContent = group.title;
-    section.append(heading);
     const fields = document.createElement("div");
     fields.className = "settings-fields";
     for (const key of group.keys) {
@@ -1287,13 +574,14 @@ function renderSettingsControls() {
         control.max = field.maximum;
         control.step = field.step;
         control.inputMode = "decimal";
+        control.placeholder = "—";
       }
       control.disabled = true;
       control.addEventListener("change", onSettingChange);
       if (kind === "select") {
         const unknown = document.createElement("option");
         unknown.value = "";
-        unknown.textContent = "Connect to read";
+        unknown.textContent = "—";
         unknown.disabled = true;
         unknown.selected = true;
         control.prepend(unknown);
@@ -1312,7 +600,7 @@ function renderSettingsControls() {
       }
       fields.append(label);
     }
-    section.append(fields);
+    section.append(heading, fields);
     container.append(section);
   }
   clearDeviceSettingsControls(true);
@@ -1333,9 +621,10 @@ function updateSettingControls(values) {
 }
 
 function clearDeviceSettingsControls(resetSettings = false) {
-  if (resetSettings) currentSettings = { ...DEFAULTS };
+  if (resetSettings) currentSettings = {};
   configLoaded = false;
-  document.getElementById("volume").value = "";
+  deviceVolume = null;
+  renderDeviceVolume();
   for (const control of document.querySelectorAll("[data-setting-key]")) {
     if (control.type === "checkbox") {
       control.checked = false;
@@ -1350,13 +639,14 @@ function applyDeviceConfig(output) {
   const parsed = parseDeviceConfig(output);
   clearDeviceSettingsControls();
   updateSettingControls(parsed);
-  if (parsed.volume !== undefined) document.getElementById("volume").value = parsed.volume;
+  const parsedVolume = Number(parsed.volume);
+  deviceVolume = Number.isInteger(parsedVolume) && parsedVolume >= 0 && parsedVolume <= 100
+    ? parsedVolume
+    : null;
+  renderDeviceVolume();
   const missing = Object.keys(DEFAULTS).filter((key) => !(key in parsed));
   configLoaded = missing.length === 0;
-  deviceReadState.textContent = configLoaded
-    ? `${configTransactionActive ? "Staged settings (not yet committed to NVS)" : "Current settings read from device"} at ${new Date().toLocaleTimeString()}.`
-    : `Configuration was incomplete; missing values: ${missing.join(", ")}.`;
-  updateDeviceSnapshot("siren config", output);
+  renderDeviceStatusMessage();
   if (connected) {
     connectionStage = configLoaded
       ? "Connected · live values loaded"
@@ -1366,6 +656,20 @@ function applyDeviceConfig(output) {
   if (!configLoaded) {
     appendLogRow("ERROR", `Device configuration was incomplete: ${missing.join(", ")}.`);
   }
+}
+
+function renderDeviceVolume() {
+  const hasDeviceVolume = deviceVolume !== null;
+  headerVolume.dataset.known = String(hasDeviceVolume);
+  volumeSlider.hidden = !hasDeviceVolume;
+  volumeValue.classList.toggle("unknown", !hasDeviceVolume);
+  volumeValue.textContent = hasDeviceVolume ? `${deviceVolume}%` : "—%";
+  volumeSlider.setAttribute(
+    "aria-valuetext",
+    hasDeviceVolume ? `${deviceVolume} percent, read from device` : "Not read from device",
+  );
+  if (hasDeviceVolume) volumeSlider.value = String(deviceVolume);
+  volumeSlider.disabled = !connected || busy || !hasDeviceVolume;
 }
 
 function parseDeviceConfig(text) {
@@ -1538,9 +842,14 @@ function loadLocalPresets() {
   renderPresetOptions();
 }
 
-function renderPresetOptions(selectedName = "Warning") {
+function renderPresetOptions(selectedName = "") {
   const select = document.getElementById("preset-select");
   select.replaceChildren();
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Choose a preset…";
+  placeholder.selected = true;
+  select.append(placeholder);
   const builtins = document.createElement("optgroup");
   builtins.label = "Built-in";
   for (const name of Object.keys(BUILTINS)) {
@@ -1560,12 +869,15 @@ function renderPresetOptions(selectedName = "Warning") {
   }
   if (saved.children.length) select.append(saved);
   if ([...select.options].some((option) => option.value === selectedName)) select.value = selectedName;
+  else select.value = "";
+  lastPresetSelection = select.value;
   updatePresetButtons();
 }
 
 function updatePresetButtons() {
-  const selected = document.getElementById("preset-select").value;
-  document.getElementById("apply-preset").disabled = !connected || busy || !selected;
+  const select = document.getElementById("preset-select");
+  const selected = select.value;
+  select.disabled = busy;
   document.getElementById("save-preset").disabled = !connected || busy || !configLoaded;
   document.getElementById("delete-preset").disabled =
     busy || !selected || Object.hasOwn(BUILTINS, selected);
@@ -1576,6 +888,38 @@ function selectedPreset() {
   const scene = Object.hasOwn(BUILTINS, name) ? BUILTINS[name] : presetCatalog.presets[name];
   if (!scene) throw new Error("Select a valid preset.");
   return { name, scene: validateScene(scene) };
+}
+
+function handlePresetSelectionChange() {
+  const select = document.getElementById("preset-select");
+  const selectedName = select.value;
+  updatePresetButtons();
+  if (!selectedName) {
+    lastPresetSelection = "";
+    updatePresetButtons();
+    return;
+  }
+  if (!connected) {
+    lastPresetSelection = selectedName;
+    connectionMessage.textContent = "Connect to apply the selected preset.";
+    return;
+  }
+  let preset;
+  try {
+    preset = selectedPreset();
+  } catch (error) {
+    select.value = lastPresetSelection;
+    updatePresetButtons();
+    showError(error);
+    return;
+  }
+  if (!window.confirm(`Apply "${preset.name}" to the device and save it to NVS?`)) {
+    select.value = lastPresetSelection;
+    updatePresetButtons();
+    return;
+  }
+  lastPresetSelection = selectedName;
+  void withBusy(() => applyScene(preset.scene));
 }
 
 function buildSceneCommands(scene) {
@@ -1665,14 +1009,13 @@ async function disconnectDevice() {
     await waitForIdle();
   }
   await closeSerial();
-  clearDeviceSnapshot("Disconnected. Connect again to read the device's current state.");
-  connectionMessage.textContent = "Disconnected. Connect again to read the device's current state.";
+  connectionMessage.textContent = "";
   appendLogRow("INFO", "Serial port disconnected.");
 }
 
-connectButton.addEventListener("click", () => withBusy(async () => {
+async function connectFromHeader() {
   connectionStage = "Choose a USB serial device…";
-  connectionMessage.textContent = connectionStage;
+  connectionMessage.textContent = "";
   renderState();
   try {
     await connectDevice();
@@ -1696,12 +1039,14 @@ connectButton.addEventListener("click", () => withBusy(async () => {
     renderState();
     throw error;
   }
-}));
-
-disconnectButton.addEventListener("click", () => withBusy(disconnectDevice));
+}
 
 document.getElementById("playback-form").addEventListener("submit", (event) => {
   event.preventDefault();
+  if (playbackActive === true) {
+    requestPlaybackStop("siren stop");
+    return;
+  }
   const timeout = Number(document.getElementById("safety-timeout").value);
   if (!Number.isInteger(timeout) || timeout < 0 || timeout > 3600) {
     showError("Safety timeout must be a whole number from 0 to 3600 seconds.");
@@ -1712,54 +1057,44 @@ document.getElementById("playback-form").addEventListener("submit", (event) => {
   withBusy(() => sendCommand(`siren loop ${timeout}`, { confirmNoTimeout: timeout === 0 }));
 });
 
-document.getElementById("stop-button").addEventListener("click", () =>
-  requestPlaybackStop("siren stop"),
-);
-
 document.getElementById("cancel-button").addEventListener("click", () =>
   requestPlaybackStop("siren cancel"),
 );
 
-document.getElementById("volume-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const volume = Number(document.getElementById("volume").value);
-  if (!Number.isInteger(volume) || volume < 0 || volume > 100) {
-    showError("Volume must be an integer from 0 to 100.");
+volumeSlider.addEventListener("input", () => {
+  volumeValue.textContent = `${volumeSlider.value}%`;
+  volumeSlider.setAttribute("aria-valuetext", `${volumeSlider.value} percent, pending confirmation`);
+});
+volumeSlider.addEventListener("change", () => {
+  const requestedVolume = Number(volumeSlider.value);
+  if (!connected || deviceVolume === null || busy || requestedVolume === deviceVolume) {
+    renderDeviceVolume();
     return;
   }
-  withBusy(async () => {
-    await sendCommand(`audio volume ${volume}`);
-    await sendCommand("siren config");
-    await sendCommand("audio status");
+  void withBusy(async () => {
+    volumeSlider.value = String(requestedVolume);
+    volumeValue.textContent = `${requestedVolume}%`;
+    try {
+      await sendCommand(`audio volume ${requestedVolume}`);
+      await sendCommand("siren config");
+      await sendCommand("audio status");
+      if (deviceVolume !== requestedVolume) {
+        throw new Error("Firmware did not confirm the requested speaker volume.");
+      }
+    } catch (error) {
+      renderDeviceVolume();
+      throw error;
+    }
   });
 });
 
-document.getElementById("read-status").addEventListener("click", () => withBusy(async () => {
-  await sendCommand("siren status");
-  await sendCommand("audio status");
-}));
-document.getElementById("read-config").addEventListener("click", () =>
-  withBusy(() => sendCommand("siren config")),
-);
 document.getElementById("refresh-config").addEventListener("click", () =>
   withBusy(() => sendCommand("siren config")),
 );
 document.getElementById("run-benchmark").addEventListener("click", () =>
   withBusy(() => sendCommand("siren benchmark")),
 );
-document.getElementById("preset-select").addEventListener("change", updatePresetButtons);
-
-document.getElementById("apply-preset").addEventListener("click", () => {
-  let preset;
-  try {
-    preset = selectedPreset();
-  } catch (error) {
-    showError(error);
-    return;
-  }
-  if (!window.confirm(`Apply "${preset.name}" to the device and save it to NVS?`)) return;
-  withBusy(() => applyScene(preset.scene));
-});
+document.getElementById("preset-select").addEventListener("change", handlePresetSelectionChange);
 
 document.getElementById("save-preset").addEventListener("click", () => {
   if (!configLoaded || !connected) {
@@ -1838,7 +1173,7 @@ document.getElementById("command-form").addEventListener("submit", (event) => {
       confirmNoTimeout: isUnboundedPlayback,
     });
     if (command === "siren config begin") {
-      deviceReadState.textContent = "Settings transaction active. Changes are staged in RAM and will not persist until commit.";
+      connectionMessage.textContent = "Settings staged in RAM; not committed.";
     }
     if (isReset || ["siren config load", "siren config commit", "siren config abort"].includes(command) ||
         /^(?:siren (?:preset|room|model|chopper|set)|audio volume)\b/.test(command)) {
@@ -1849,7 +1184,6 @@ document.getElementById("command-form").addEventListener("submit", (event) => {
   });
 });
 
-document.getElementById("clear-log").addEventListener("click", () => eventLog.replaceChildren());
 navigator.serial?.addEventListener("disconnect", (event) => {
   if (event.target !== serialPort) return;
   void closeSerial().then(() => {
@@ -1860,6 +1194,39 @@ navigator.serial?.addEventListener("disconnect", (event) => {
 });
 window.addEventListener("pagehide", () => {
   if (serialPort) void closeSerial().catch((error) => appendLogRow("ERROR", error.message));
+});
+
+// Topbar & Terminal Drawer Handlers
+document.getElementById("btnConnect")?.addEventListener("click", () => {
+  if (connected) {
+    void withBusy(disconnectDevice);
+  } else {
+    void withBusy(connectFromHeader);
+  }
+});
+const helpDialog = document.getElementById("help-dialog");
+document.getElementById("btnHelp")?.addEventListener("click", () => helpDialog.showModal());
+document.getElementById("close-help-dialog")?.addEventListener("click", () => helpDialog.close());
+helpDialog.addEventListener("click", (event) => {
+  if (event.target === helpDialog) helpDialog.close();
+});
+document.getElementById("btnToggleTerm")?.addEventListener("click", () => {
+  const drawer = document.getElementById("termDrawer");
+  const isOpen = drawer?.classList.toggle("open") === true;
+  if (drawer) {
+    drawer.inert = !isOpen;
+    drawer.setAttribute("aria-hidden", String(!isOpen));
+  }
+  document.getElementById("btnToggleTerm")?.setAttribute("aria-expanded", String(isOpen));
+});
+document.getElementById("drawerCloseBtn")?.addEventListener("click", () => {
+  const drawer = document.getElementById("termDrawer");
+  drawer?.classList.remove("open");
+  if (drawer) {
+    drawer.inert = true;
+    drawer.setAttribute("aria-hidden", "true");
+  }
+  document.getElementById("btnToggleTerm")?.setAttribute("aria-expanded", "false");
 });
 
 renderSettingsControls();
@@ -1882,64 +1249,3 @@ window.setInterval(async () => {
 }, 1800);
 
 
-// Real-time oscilloscope visualizer
-(function initOscilloscope() {
-  const canvas = document.getElementById("siren-scope");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  let phase = 0;
-
-  function renderScope() {
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.fillStyle = "#080a0e";
-    ctx.fillRect(0, 0, w, h);
-
-    // Grid lines
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, h / 2);
-    ctx.lineTo(w, h / 2);
-    for (let x = 0; x < w; x += 40) {
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-    }
-    ctx.stroke();
-
-    // Waveform
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = playbackActive ? "#00e5a3" : "#303a48";
-    ctx.shadowBlur = playbackActive ? 8 : 0;
-    ctx.shadowColor = "#00e5a3";
-    ctx.beginPath();
-
-    const sweepStart = Number(currentSettings.sweep_start_hz) || 210;
-    const wobble = Number(currentSettings.wobble_hz) || 2.2;
-    const modDepth = Number(currentSettings.modulation_depth) || 0.26;
-    const amp = playbackActive ? Math.min(1.0, Math.max(0.15, Number(currentSettings.amplitude) || 0.6)) : 0.04;
-
-    for (let x = 0; x < w; x++) {
-      const t = (x / w) * 4 * Math.PI;
-      const freqMod = 1.0 + modDepth * Math.sin(t * wobble * 0.1 + phase * 0.5);
-      const y = (h / 2) + Math.sin(t * (sweepStart / 50) * freqMod + phase) * (h * 0.38 * amp);
-      if (x === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Status pill overlay
-    ctx.fillStyle = playbackActive ? "#00e5a3" : "#556274";
-    ctx.font = "10px ui-monospace, monospace";
-    ctx.fillText(playbackActive ? "ACTIVE · SYNTH OSCILLATING" : "STANDBY · IDLE", 10, 16);
-
-    phase += playbackActive ? 0.18 : 0.02;
-    requestAnimationFrame(renderScope);
-  }
-  renderScope();
-})();
-
-</script>
-</body>
-</html>

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Siren Synth Studio · ESP32-P4 Hardware Console</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-title">SIREN SYNTH STUDIO</div>
+        <div class="brand-sub">WAVESHARE ESP32-P4 WIFI6 · Sound Design</div>
+      </div>
+      <div class="header-actions">
+        <button id="btnConnect" class="icon-btn" type="button" data-tooltip="Connect ESP32 (Web Serial)" aria-label="Connect ESP32" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2v6m0 0l3-3m-3 3L9 5M5 11h14M7 11v5a5 5 0 0 0 10 0v-5"/>
+          </svg>
+        </button>
+        <button id="btnToggleTerm" class="icon-btn" type="button" data-tooltip="Toggle Serial Console" aria-label="Toggle Serial Console" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="4 17 10 11 4 5"/>
+            <line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+        </button>
+        <button id="btnHelp" class="icon-btn" type="button" data-tooltip="Help and quick reference" aria-label="Open help">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+            <path d="M12 17h.01"/>
+          </svg>
+        </button>
+        <span class="header-divider" aria-hidden="true"></span>
+        <div id="header-volume" class="header-volume" data-known="false" role="group" aria-label="Speaker volume">
+          <span class="header-volume-icon-shell" aria-hidden="true">
+            <svg class="header-volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+              <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+            </svg>
+          </span>
+          <span class="header-volume-track" aria-hidden="true"></span>
+          <input id="header-volume-slider" class="header-volume-slider" type="range" min="0" max="100" step="1" aria-label="Speaker volume" aria-valuetext="Not read from device" title="Speaker volume (0–100)" hidden disabled>
+          <output id="header-volume-value" class="header-volume-value" for="header-volume-slider" aria-label="Device speaker volume" aria-live="polite">—%</output>
+        </div>
+      </div>
+    </header>
+
+    <section class="control-toolbar" aria-label="Playback and local presets">
+      <form id="playback-form" class="toolbar-section playback-toolbar" aria-label="Playback and preset controls">
+        <div class="playback-toolbar-controls">
+          <div class="playback-toolbar-actions">
+            <button id="playback-button" class="icon-btn playback-action primary" type="submit" data-tooltip="Start current pattern" aria-label="Start current pattern" aria-pressed="false" disabled>
+              <svg class="playback-play-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 5 11 7-11 7V5z"/>
+              </svg>
+              <svg class="playback-stop-icon" viewBox="0 0 24 24" aria-hidden="true" hidden>
+                <path d="M7 7h10v10H7z"/>
+              </svg>
+            </button>
+            <button id="cancel-button" class="icon-btn playback-action secondary" type="button" data-tooltip="Cancel · wind down" aria-label="Cancel and wind down playback" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M4 5v14M9 8v8M14 10v4M19 11v2"/>
+              </svg>
+            </button>
+            <button id="run-benchmark" class="icon-btn" type="button" data-tooltip="Run DSP benchmark" aria-label="Run DSP benchmark" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 3v18h18M7 14l4-4 4 4 6-7"/>
+              </svg>
+            </button>
+          </div>
+          <div class="preset-toolbar">
+            <div class="preset-select-field">
+              <select id="preset-select" aria-label="Sound preset"></select>
+            </div>
+            <div class="preset-actions" role="group" aria-label="Preset actions">
+              <button id="save-preset" class="icon-btn" type="button" data-tooltip="Save current settings as preset" aria-label="Save current settings as preset" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>
+                  <path d="M17 21v-8H7v8M7 3v5h8"/>
+                </svg>
+              </button>
+              <button id="delete-preset" class="icon-btn" type="button" data-tooltip="Delete selected saved preset" aria-label="Delete selected saved preset" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/>
+                </svg>
+              </button>
+              <button id="export-presets" class="icon-btn" type="button" data-tooltip="Export saved presets" aria-label="Export saved presets">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 15V3m0 0L8 7m4-4 4 4"/>
+                  <path d="M5 12v7h14v-7"/>
+                </svg>
+              </button>
+              <button id="import-presets" class="icon-btn" type="button" data-tooltip="Import presets" aria-label="Import presets">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3v12m0 0 4-4m-4 4-4-4"/>
+                  <path d="M5 13v6h14v-6"/>
+                </svg>
+              </button>
+            </div>
+            <input id="preset-file" type="file" accept=".json,application/json" hidden>
+          </div>
+        </div>
+      </form>
+
+      <section class="toolbar-section safety-timeout-toolbar" aria-label="Safety timer">
+        <div class="field safety-timeout-field">
+          <span class="field-control">
+            <label for="safety-timeout">Safety timer</label>
+            <input id="safety-timeout" type="number" min="0" max="3600" step="1" value="30" inputmode="numeric">
+            <span class="unit">seconds</span>
+          </span>
+        </div>
+      </section>
+    </section>
+
+    <main class="studio-workspace" aria-label="Device settings">
+      <div class="settings-heading-row">
+        <h1>Device settings</h1>
+        <button id="refresh-config" class="icon-btn" type="button" data-tooltip="Reload from device" aria-label="Reload configuration from device" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 7v5h-5M4 17v-5h5"/>
+            <path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/>
+          </svg>
+        </button>
+      </div>
+      <div id="settings-grid" class="settings-grid"></div>
+    </main>
+
+    <footer class="status-bar">
+      <div class="status-left">
+        <span id="connection-badge" class="badge" role="status">Disconnected</span>
+        <span id="connection-message" class="status-message" role="status" aria-live="polite"></span>
+      </div>
+      <div class="status-right">
+        <span>WEB SERIAL</span>
+        <span>115200 BAUD</span>
+      </div>
+    </footer>
+
+    <div id="termDrawer" class="bottom-terminal-drawer" role="region" aria-label="Serial console" aria-hidden="true" inert>
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="4 17 10 11 4 5"/>
+            <line x1="12" y1="19" x2="20" y2="19"/>
+          </svg>
+          <span>Serial Console <small>115200 baud</small></span>
+        </div>
+        <div class="drawer-actions" aria-label="Console actions">
+          <button class="icon-btn" id="drawerCopyBtn" type="button" data-tooltip="Copy console" aria-label="Copy console">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="8" y="8" width="12" height="12" rx="2"/>
+              <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="drawerDownloadBtn" type="button" data-tooltip="Download console" aria-label="Download console">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="drawerClearBtn" type="button" data-tooltip="Clear console" aria-label="Clear console">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="drawerCloseBtn" type="button" data-tooltip="Close console" aria-label="Close console">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m18 6-12 12M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <ol id="event-log" class="event-log" aria-live="polite" aria-label="Serial event log"></ol>
+      <form id="command-form" class="drawer-input-row">
+        <input id="command-input" type="text" maxlength="128" autocomplete="off" spellcheck="false" placeholder="siren config" aria-label="Serial command" disabled>
+        <button id="send-command" class="icon-btn" type="submit" data-tooltip="Send command" aria-label="Send command" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 2 11 13"/>
+            <path d="m22 2-7 20-4-9-9-4 20-7Z"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <dialog id="save-preset-dialog" class="modal">
+      <form id="save-preset-form" method="dialog">
+        <p class="eyebrow">LOCAL PRESET</p>
+        <h2>Save current settings</h2>
+        <label class="field" for="preset-name">
+          <span>Preset name</span>
+          <input id="preset-name" type="text" minlength="1" maxlength="48" autocomplete="off" required>
+        </label>
+        <p class="hint">Names can use letters, numbers, spaces, and _ ( ) . -.</p>
+        <div class="button-row modal-actions">
+          <button id="cancel-save-preset" class="button secondary" type="button">Cancel</button>
+          <button class="button primary" type="submit">Save preset</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="help-dialog" class="modal help-dialog" aria-labelledby="help-title">
+      <div class="help-header">
+        <div>
+          <p class="eyebrow">SIREN SYNTH STUDIO</p>
+          <h2 id="help-title">Hardware quick reference</h2>
+        </div>
+        <button id="close-help-dialog" class="icon-btn" type="button" data-tooltip="Close help" aria-label="Close help">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m18 6-12 12M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="help-content">
+        <section>
+          <h3>Connect and read the device</h3>
+          <p>Use the USB icon in the header to select the ESP32. The page verifies the firmware before enabling controls and reads the current playback, configuration, and audio status.</p>
+        </section>
+        <section>
+          <h3>Playback and volume</h3>
+          <p>Start uses the firmware safety timeout. Cancel requests a gradual wind-down; Brake stops quickly and can interrupt a wind-down. The header volume control stays inactive until a real device value has been read.</p>
+        </section>
+        <section>
+          <h3>Configuration and presets</h3>
+          <p>Signal, Room &amp; effects, and Chopper &amp; RPM settings are shown together on one page. Device values come from firmware. Saved presets stay in this browser; selecting one asks for confirmation before saving its settings to the device. Playback does not start.</p>
+        </section>
+        <section>
+          <h3>Serial console commands</h3>
+          <pre>siren status
+siren config
+audio status
+siren benchmark</pre>
+        </section>
+      </div>
+    </dialog>
+
+    <script src="js/console.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

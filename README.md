@@ -111,7 +111,11 @@ tests/
   host/                          Native C renderer regression tests
   test_web_console.py            Standalone browser-console checks
 tools-web/
-  siren_console.html             Standalone Web Serial console
+  index.html                     Standalone Web Serial console entry point
+  styles.css                     Console presentation
+  js/
+    app.js                       Serial protocol and device UI
+    console.js                   Clear/copy/download actions
 ```
 
 `ws-esp32-p4-wifi6-console-siren-dev` owns the Waveshare-specific
@@ -157,26 +161,29 @@ python -m unittest discover -s tests -p "test_*.py"
 
 ### Standalone browser console
 
-Open [tools-web/siren_console.html](./tools-web/siren_console.html) in Chrome, Edge, or
+Open [tools-web/index.html](./tools-web/index.html) in Chrome, Edge, or
 the VS Code Chromium browser, then choose the USB serial device from the
-browser's Web Serial picker. This is a single self-contained HTML file: no
-Python bridge, batch launcher, local server, network connection, or browser
-extension is required. Firefox does not currently expose the Web Serial API.
+browser's Web Serial picker. This is a small set of local HTML, CSS, and JavaScript
+files: no Python bridge, batch launcher, local server, network connection, or
+browser extension is required. Firefox does not currently expose the Web Serial API.
 The browser verifies the development firmware before enabling controls and
 never starts playback automatically. Close ESP-IDF Monitor and other serial
 applications before connecting because the UART is exclusive.
 
-The page provides all current firmware settings, playback/volume,
-configuration/status reads, the DSP benchmark, the firmware command console,
-and validated local preset save/import/export. Device settings and volume are
-blank until they are read from the connected firmware; they are not presented
-as live factory defaults. Playback offers a gradual Cancel wind-down based on
-the saved motor-fall time and a separate fast Brake control; Brake can
-interrupt a wind-down. Unbounded playback and reset commands require
+The page provides all current firmware settings, playback/volume controls,
+firmware configuration reload, the DSP benchmark, the firmware command
+console, and validated local preset save/import/export. Playback and presets
+are in the toolbar below the header; all Signal, Room & effects, and Chopper &
+RPM settings are shown together on one page. Device settings remain unknown,
+and the header volume level remains unset, until values are read from firmware;
+they are not presented as live factory defaults. Connection, playback, and
+configuration state are summarized in the bottom status bar. Playback offers
+a single Play/Brake icon button and a separate wind-down icon button. Brake
+can interrupt a wind-down. Unbounded playback and reset commands require
 confirmation. Firmware build/flash controls are not included. The standalone
-HTML page is the only PC serial console; it needs no Python installation,
-dependencies, batch launcher, local server, network connection, or browser
-extension.
+browser console is the only PC serial console; it
+needs no Python installation, dependencies, batch launcher, local server,
+network connection, or browser extension.
 
 ---
 

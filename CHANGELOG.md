@@ -20,8 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   transactions for batching multi-setting updates.
 - A device-enforced safety timeout for loop playback (`siren loop <seconds>`),
   with `0` retaining an explicitly unlimited mode.
-- A standalone browser console in `tools-web/siren_console.html` using Web Serial,
-  live device state, local presets, and separate Cancel and Brake controls.
+- A modular standalone browser console in `tools-web/index.html`, with local
+  CSS and JavaScript assets, Web Serial, verified live device state, local
+  presets, and separate Cancel and Brake controls.
 - `siren cancel` for a motor-fall-derived wind-down and `siren brake`/`siren stop`
   for a fast release that can interrupt it.
 - Native C renderer regressions and standalone browser-console checks.
